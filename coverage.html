@@ -1,0 +1,567 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>go-facturacion-sri: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">go-facturacion-sri/main.go (63.2%)</option>
+				
+				<option value="file1">go-facturacion-sri/test_validaciones.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "encoding/xml"
+        "errors"
+        "fmt"
+        "strconv"
+        "strings"
+        "time"
+)
+
+// ProductoInput - Datos de un producto individual
+type ProductoInput struct {
+        Codigo         string
+        Descripcion    string
+        Cantidad       float64
+        PrecioUnitario float64
+}
+
+// FacturaInput - Datos simples para crear una factura
+// Ahora soporta múltiples productos!
+type FacturaInput struct {
+        ClienteNombre string
+        ClienteCedula string
+        Productos     []ProductoInput // Slice de productos!
+}
+
+// InfoTributaria - Datos básicos del emisor (obligatorios SRI)
+type InfoTributaria struct {
+        Ambiente        string `xml:"ambiente"`
+        TipoEmision     string `xml:"tipoEmision"`
+        RazonSocial     string `xml:"razonSocial"`
+        RUC             string `xml:"ruc"`
+        ClaveAcceso     string `xml:"claveAcceso"`
+        CodDoc          string `xml:"codDoc"`
+        Establecimiento string `xml:"estab"`
+        PuntoEmision    string `xml:"ptoEmi"`
+        Secuencial      string `xml:"secuencial"`
+}
+
+// InfoFactura - Datos específicos de la factura
+type InfoFactura struct {
+        FechaEmision                string  `xml:"fechaEmision"`
+        DirEstablecimiento          string  `xml:"dirEstablecimiento"`
+        TipoIdentificacionComprador string  `xml:"tipoIdentificacionComprador"`
+        IdentificacionComprador     string  `xml:"identificacionComprador"`
+        RazonSocialComprador        string  `xml:"razonSocialComprador"`
+        TotalSinImpuestos           float64 `xml:"totalSinImpuestos"`
+        TotalDescuento              float64 `xml:"totalDescuento"`
+        ImporteTotal                float64 `xml:"importeTotal"`
+        Moneda                      string  `xml:"moneda"`
+}
+
+// Detalle - Item individual de la factura
+type Detalle struct {
+        CodigoPrincipal        string  `xml:"codigoPrincipal"`
+        Descripcion            string  `xml:"descripcion"`
+        Cantidad               float64 `xml:"cantidad"`
+        PrecioUnitario         float64 `xml:"precioUnitario"`
+        Descuento              float64 `xml:"descuento"`
+        PrecioTotalSinImpuesto float64 `xml:"precioTotalSinImpuesto"`
+}
+
+// Factura - Estructura completa del documento
+type Factura struct {
+        XMLName        xml.Name       `xml:"factura"`
+        InfoTributaria InfoTributaria `xml:"infoTributaria"`
+        InfoFactura    InfoFactura    `xml:"infoFactura"`
+        Detalles       []Detalle      `xml:"detalles&gt;detalle"`
+}
+
+// validarCedula - Valida que una cédula ecuatoriana sea correcta
+// Devuelve un error si la cédula no es válida
+func validarCedula(cedula string) error <span class="cov8" title="1">{
+        // Verificar longitud
+        if len(cedula) != 10 </span><span class="cov8" title="1">{
+                return errors.New("la cédula debe tener exactamente 10 dígitos")
+        }</span>
+        
+        // Verificar que todos sean números
+        <span class="cov8" title="1">for _, char := range cedula </span><span class="cov8" title="1">{
+                if char &lt; '0' || char &gt; '9' </span><span class="cov8" title="1">{
+                        return errors.New("la cédula solo puede contener números")
+                }</span>
+        }
+        
+        // Verificar que los dos primeros dígitos sean válidos (01-24)
+        <span class="cov8" title="1">provincia, err := strconv.Atoi(cedula[:2])
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.New("error al procesar los primeros dos dígitos de la cédula")
+        }</span>
+        
+        <span class="cov8" title="1">if provincia &lt; 1 || provincia &gt; 24 </span><span class="cov8" title="1">{
+                return errors.New("los dos primeros dígitos de la cédula deben estar entre 01 y 24")
+        }</span>
+        
+        // Algoritmo de validación del dígito verificador
+        <span class="cov8" title="1">coeficientes := []int{2, 1, 2, 1, 2, 1, 2, 1, 2}
+        suma := 0
+        
+        for i := 0; i &lt; 9; i++ </span><span class="cov8" title="1">{
+                digito, _ := strconv.Atoi(string(cedula[i]))
+                resultado := digito * coeficientes[i]
+                
+                if resultado &gt;= 10 </span><span class="cov8" title="1">{
+                        resultado = resultado - 9
+                }</span>
+                
+                <span class="cov8" title="1">suma += resultado</span>
+        }
+        
+        <span class="cov8" title="1">digitoVerificador := suma % 10
+        if digitoVerificador != 0 </span><span class="cov8" title="1">{
+                digitoVerificador = 10 - digitoVerificador
+        }</span>
+        
+        <span class="cov8" title="1">ultimoDigito, _ := strconv.Atoi(string(cedula[9]))
+        
+        if digitoVerificador != ultimoDigito </span><span class="cov8" title="1">{
+                return errors.New("el dígito verificador de la cédula no es válido")
+        }</span>
+        
+        <span class="cov8" title="1">return nil</span> // nil significa "no hay error"
+}
+
+// validarProducto - Valida un producto individual
+func validarProducto(producto ProductoInput) error <span class="cov8" title="1">{
+        // Validar código de producto
+        if producto.Codigo == "" </span><span class="cov8" title="1">{
+                return errors.New("el código del producto no puede estar vacío")
+        }</span>
+        
+        // Validar descripción
+        <span class="cov8" title="1">if producto.Descripcion == "" </span><span class="cov8" title="1">{
+                return errors.New("la descripción del producto no puede estar vacía")
+        }</span>
+        
+        // Validar cantidad
+        <span class="cov8" title="1">if producto.Cantidad &lt;= 0 </span><span class="cov8" title="1">{
+                return errors.New("la cantidad debe ser mayor a cero")
+        }</span>
+        
+        // Validar precio
+        <span class="cov8" title="1">if producto.PrecioUnitario &lt;= 0 </span><span class="cov8" title="1">{
+                return errors.New("el precio unitario debe ser mayor a cero")
+        }</span>
+        
+        <span class="cov8" title="1">return nil</span>
+}
+
+// validarFacturaInput - Valida todos los datos de entrada
+func validarFacturaInput(input FacturaInput) error <span class="cov8" title="1">{
+        // Validar nombre del cliente
+        if input.ClienteNombre == "" </span><span class="cov0" title="0">{
+                return errors.New("el nombre del cliente no puede estar vacío")
+        }</span>
+        
+        // Validar cédula
+        <span class="cov8" title="1">if err := validarCedula(input.ClienteCedula); err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("cédula inválida: %v", err)
+        }</span>
+        
+        // Validar que tenga al menos un producto
+        <span class="cov8" title="1">if len(input.Productos) == 0 </span><span class="cov8" title="1">{
+                return errors.New("debe incluir al menos un producto")
+        }</span>
+        
+        // Validar cada producto usando un loop
+        <span class="cov8" title="1">for i, producto := range input.Productos </span><span class="cov8" title="1">{
+                if err := validarProducto(producto); err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("producto %d inválido: %v", i+1, err)
+                }</span>
+        }
+        
+        <span class="cov8" title="1">return nil</span>
+}
+
+// CrearFactura - Función factory que crea una factura completa
+// Recibe datos simples y devuelve una estructura completa lista para XML
+// Ahora devuelve (Factura, error) - dos valores!
+func CrearFactura(input FacturaInput) (Factura, error) <span class="cov8" title="1">{
+        // Primero validamos los datos de entrada
+        if err := validarFacturaInput(input); err != nil </span><span class="cov8" title="1">{
+                return Factura{}, err // Devolvemos factura vacía y el error
+        }</span>
+        
+        // Calcular totales de TODOS los productos
+        <span class="cov8" title="1">var subtotal float64 = 0
+        var detalles []Detalle // Slice vacío para ir agregando productos
+        
+        // Procesar cada producto
+        for _, producto := range input.Productos </span><span class="cov8" title="1">{
+                // Calcular subtotal de este producto
+                subtotalProducto := producto.Cantidad * producto.PrecioUnitario
+                subtotal += subtotalProducto // Sumar al total general
+                
+                // Crear detalle para este producto
+                detalle := Detalle{
+                        CodigoPrincipal:        producto.Codigo,
+                        Descripcion:            producto.Descripcion,
+                        Cantidad:               producto.Cantidad,
+                        PrecioUnitario:         producto.PrecioUnitario,
+                        Descuento:              0.00,
+                        PrecioTotalSinImpuesto: subtotalProducto,
+                }
+                
+                // Agregar al slice de detalles
+                detalles = append(detalles, detalle)
+        }</span>
+        
+        // Calcular IVA sobre el subtotal total
+        <span class="cov8" title="1">iva := subtotal * 0.15  // 15% IVA Ecuador
+        total := subtotal + iva
+        
+        // Crear la factura completa con valores por defecto
+        factura := Factura{
+                InfoTributaria: InfoTributaria{
+                        Ambiente:        "1", // 1=pruebas, 2=producción
+                        TipoEmision:     "1", // 1=normal
+                        RazonSocial:     "EMPRESA DEMO S.A.",
+                        RUC:             "1234567890001",
+                        ClaveAcceso:     generarClaveAcceso(),
+                        CodDoc:          "01", // 01=factura
+                        Establecimiento: "001",
+                        PuntoEmision:    "001",
+                        Secuencial:      "000000001",
+                },
+                InfoFactura: InfoFactura{
+                        FechaEmision:                time.Now().Format("02/01/2006"), // DD/MM/YYYY
+                        DirEstablecimiento:          "Av. Amazonas y Naciones Unidas",
+                        TipoIdentificacionComprador: "05", // 05=cédula
+                        IdentificacionComprador:     input.ClienteCedula,
+                        RazonSocialComprador:        input.ClienteNombre,
+                        TotalSinImpuestos:           subtotal,
+                        TotalDescuento:              0.00,
+                        ImporteTotal:                total,
+                        Moneda:                      "DOLAR",
+                },
+                Detalles: detalles, // Usar el slice que construimos en el loop
+        }
+        
+        return factura, nil</span> // nil significa "no hay error"
+}
+
+// GenerarXML - Método que convierte la factura a XML
+// Receiver: (f Factura) significa que este método "pertenece" a cualquier Factura
+func (f Factura) GenerarXML() ([]byte, error) <span class="cov0" title="0">{
+        // xml.MarshalIndent formatea el XML con indentación bonita
+        xmlData, err := xml.MarshalIndent(f, "", "  ")
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err // nil es el valor "vacío" para []byte
+        }</span>
+        <span class="cov0" title="0">return xmlData, nil</span>
+}
+
+// MostrarResumen - Método que imprime un resumen de la factura
+func (f Factura) MostrarResumen() <span class="cov0" title="0">{
+        fmt.Println("=== FACTURA ELECTRÓNICA ECUATORIANA ===")
+        fmt.Printf("Secuencial: %s\n", f.InfoTributaria.Secuencial)
+        fmt.Printf("Cliente: %s (%s)\n", 
+                f.InfoFactura.RazonSocialComprador, 
+                f.InfoFactura.IdentificacionComprador)
+        
+        // Mostrar productos
+        for i, detalle := range f.Detalles </span><span class="cov0" title="0">{
+                fmt.Printf("Producto %d: %s\n", i+1, detalle.Descripcion)
+                fmt.Printf("Cantidad: %.0f x $%.2f = $%.2f\n", 
+                        detalle.Cantidad, 
+                        detalle.PrecioUnitario, 
+                        detalle.PrecioTotalSinImpuesto)
+        }</span>
+        
+        <span class="cov0" title="0">fmt.Printf("IVA 15%%: $%.2f\n", f.InfoFactura.ImporteTotal - f.InfoFactura.TotalSinImpuestos)
+        fmt.Printf("TOTAL: $%.2f\n", f.InfoFactura.ImporteTotal)
+        fmt.Println()</span>
+}
+
+func main() <span class="cov0" title="0">{
+        // Primero, ejecutar pruebas de validación
+        probarValidaciones()
+        
+        fmt.Println("\n" + strings.Repeat("=", 50))
+        fmt.Println("🚀 GENERANDO FACTURA PRINCIPAL")
+        fmt.Println(strings.Repeat("=", 50))
+        
+        // Crear datos de factura - ¡Ahora con múltiples productos!
+        facturaData := FacturaInput{
+                ClienteNombre: "JUAN CARLOS PEREZ",
+                ClienteCedula: "1713175071", // Cédula válida para Ecuador
+                Productos: []ProductoInput{
+                        {
+                                Codigo:         "LAPTOP001",
+                                Descripcion:    "Laptop Dell Inspiron 15",
+                                Cantidad:       2.0,
+                                PrecioUnitario: 450.00,
+                        },
+                        {
+                                Codigo:         "MOUSE001",
+                                Descripcion:    "Mouse Inalámbrico Logitech",
+                                Cantidad:       3.0,
+                                PrecioUnitario: 25.00,
+                        },
+                        {
+                                Codigo:         "TECLADO001",
+                                Descripcion:    "Teclado Mecánico RGB",
+                                Cantidad:       1.0,
+                                PrecioUnitario: 85.00,
+                        },
+                },
+        }
+        
+        // Generar factura usando nuestra función factory
+        factura, err := CrearFactura(facturaData)
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Printf("Error al crear la factura: %v\n", err)
+                return
+        }</span>
+        
+        // Mostrar resumen usando el método de la factura
+        <span class="cov0" title="0">factura.MostrarResumen()
+        
+        // Generar XML usando el método de la factura
+        xmlData, err := factura.GenerarXML()
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Printf("Error generando XML: %v\n", err)
+                return
+        }</span>
+
+        <span class="cov0" title="0">fmt.Println("=== XML GENERADO ===")
+        fmt.Printf("&lt;?xml version=\"1.0\" encoding=\"UTF-8\"?&gt;\n%s\n", xmlData)</span>
+}
+
+// Por ahora generamos una clave fake - en semana 4 implementaremos el algoritmo real del SRI
+func generarClaveAcceso() string <span class="cov8" title="1">{
+        return "2025062001123456789000110010010000000011234567890"
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package main
+
+import "fmt"
+
+// Función para probar diferentes casos de validación
+func probarValidaciones() <span class="cov0" title="0">{
+        fmt.Println("🧪 PROBANDO VALIDACIONES DE ERRORES")
+        fmt.Println("=====================================")
+        
+        // Test 1: Cédula muy corta
+        fmt.Println("\n1. Cédula muy corta:")
+        datosError1 := FacturaInput{
+                ClienteNombre: "Juan Perez",
+                ClienteCedula: "123456789", // Solo 9 dígitos
+                Productos: []ProductoInput{
+                        {
+                                Codigo:         "PROD001",
+                                Descripcion:    "Producto de prueba",
+                                Cantidad:       1.0,
+                                PrecioUnitario: 100.0,
+                        },
+                },
+        }
+        _, err := CrearFactura(datosError1)
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Printf("   ❌ Error esperado: %v\n", err)
+        }</span>
+        
+        // Test 2: Cédula con letras
+        <span class="cov0" title="0">fmt.Println("\n2. Cédula con letras:")
+        datosError2 := FacturaInput{
+                ClienteNombre: "Juan Perez",
+                ClienteCedula: "17131ABC71", // Contiene letras
+                Productos: []ProductoInput{
+                        {
+                                Codigo:         "PROD001",
+                                Descripcion:    "Producto de prueba",
+                                Cantidad:       1.0,
+                                PrecioUnitario: 100.0,
+                        },
+                },
+        }
+        _, err = CrearFactura(datosError2)
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Printf("   ❌ Error esperado: %v\n", err)
+        }</span>
+        
+        // Test 3: Cantidad cero
+        <span class="cov0" title="0">fmt.Println("\n3. Cantidad inválida:")
+        datosError3 := FacturaInput{
+                ClienteNombre: "Juan Perez",
+                ClienteCedula: "1713175071", // Cédula válida
+                Productos: []ProductoInput{
+                        {
+                                Codigo:         "PROD001",
+                                Descripcion:    "Producto de prueba",
+                                Cantidad:       0.0, // Cantidad inválida
+                                PrecioUnitario: 100.0,
+                        },
+                },
+        }
+        _, err = CrearFactura(datosError3)
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Printf("   ❌ Error esperado: %v\n", err)
+        }</span>
+        
+        // Test 4: Nombre vacío
+        <span class="cov0" title="0">fmt.Println("\n4. Nombre vacío:")
+        datosError4 := FacturaInput{
+                ClienteNombre: "", // Nombre vacío
+                ClienteCedula: "1713175071",
+                Productos: []ProductoInput{
+                        {
+                                Codigo:         "PROD001",
+                                Descripcion:    "Producto de prueba",
+                                Cantidad:       1.0,
+                                PrecioUnitario: 100.0,
+                        },
+                },
+        }
+        _, err = CrearFactura(datosError4)
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Printf("   ❌ Error esperado: %v\n", err)
+        }</span>
+        
+        // Test 5: Sin productos
+        <span class="cov0" title="0">fmt.Println("\n5. Sin productos:")
+        datosError5 := FacturaInput{
+                ClienteNombre: "Juan Perez",
+                ClienteCedula: "1713175071",
+                Productos:     []ProductoInput{}, // Lista vacía
+        }
+        _, err = CrearFactura(datosError5)
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Printf("   ❌ Error esperado: %v\n", err)
+        }</span>
+        
+        // Test 6: Datos válidos con múltiples productos
+        <span class="cov0" title="0">fmt.Println("\n6. Datos válidos con múltiples productos:")
+        datosValidos := FacturaInput{
+                ClienteNombre: "Maria Rodriguez",
+                ClienteCedula: "1713175071", // Cédula válida
+                Productos: []ProductoInput{
+                        {
+                                Codigo:         "PROD001",
+                                Descripcion:    "Producto A",
+                                Cantidad:       2.0,
+                                PrecioUnitario: 30.0,
+                        },
+                        {
+                                Codigo:         "PROD002", 
+                                Descripcion:    "Producto B",
+                                Cantidad:       1.0,
+                                PrecioUnitario: 15.0,
+                        },
+                },
+        }
+        factura, err := CrearFactura(datosValidos)
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Printf("   ❌ Error inesperado: %v\n", err)
+        }</span> else<span class="cov0" title="0"> {
+                fmt.Printf("   ✅ Factura creada exitosamente para %s\n", factura.InfoFactura.RazonSocialComprador)
+                fmt.Printf("   💰 Total: $%.2f\n", factura.InfoFactura.ImporteTotal)
+        }</span>
+}</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
