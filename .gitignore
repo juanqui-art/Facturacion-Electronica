@@ -1,0 +1,40 @@
+# Binarios compilados de Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+go-facturacion-sri
+facturacion-sri
+
+# Archivos de test
+*.test
+*.out
+
+# Archivos de coverage
+*.coverage
+
+# Archivos de módulos Go
+go.sum
+
+# Archivos del IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de configuración local
+config.local.json
+*.env
+
+# Archivos de log
+*.log
+
+# Archivos temporales
+tmp/
+temp/
