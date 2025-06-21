@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -238,10 +239,17 @@ func (f Factura) MostrarResumen() {
 }
 
 func main() {
+	// Primero, ejecutar pruebas de validación
+	probarValidaciones()
+	
+	fmt.Println("\n" + strings.Repeat("=", 50))
+	fmt.Println("🚀 GENERANDO FACTURA PRINCIPAL")
+	fmt.Println(strings.Repeat("=", 50))
+	
 	// Crear datos de factura - ¡Mucho más simple!
 	facturaData := FacturaInput{
 		ClienteNombre:       "JUAN CARLOS PEREZ",
-		ClienteCedula:       "1234567890",
+		ClienteCedula:       "1713175071", // Cédula válida para Ecuador
 		ProductoCodigo:      "LAPTOP001",
 		ProductoDescripcion: "Laptop Dell Inspiron 15",
 		Cantidad:            2.0,
