@@ -1,6 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	
+	"go-facturacion-sri/factory"
+	"go-facturacion-sri/models"
+)
 
 // Función para probar diferentes casos de validación
 func probarValidaciones() {
@@ -9,10 +14,10 @@ func probarValidaciones() {
 	
 	// Test 1: Cédula muy corta
 	fmt.Println("\n1. Cédula muy corta:")
-	datosError1 := FacturaInput{
+	datosError1 := models.FacturaInput{
 		ClienteNombre: "Juan Perez",
 		ClienteCedula: "123456789", // Solo 9 dígitos
-		Productos: []ProductoInput{
+		Productos: []models.ProductoInput{
 			{
 				Codigo:         "PROD001",
 				Descripcion:    "Producto de prueba",
@@ -21,17 +26,17 @@ func probarValidaciones() {
 			},
 		},
 	}
-	_, err := CrearFactura(datosError1)
+	_, err := factory.CrearFactura(datosError1)
 	if err != nil {
 		fmt.Printf("   ❌ Error esperado: %v\n", err)
 	}
 	
 	// Test 2: Cédula con letras
 	fmt.Println("\n2. Cédula con letras:")
-	datosError2 := FacturaInput{
+	datosError2 := models.FacturaInput{
 		ClienteNombre: "Juan Perez",
 		ClienteCedula: "17131ABC71", // Contiene letras
-		Productos: []ProductoInput{
+		Productos: []models.ProductoInput{
 			{
 				Codigo:         "PROD001",
 				Descripcion:    "Producto de prueba",
@@ -40,17 +45,17 @@ func probarValidaciones() {
 			},
 		},
 	}
-	_, err = CrearFactura(datosError2)
+	_, err = factory.CrearFactura(datosError2)
 	if err != nil {
 		fmt.Printf("   ❌ Error esperado: %v\n", err)
 	}
 	
 	// Test 3: Cantidad cero
 	fmt.Println("\n3. Cantidad inválida:")
-	datosError3 := FacturaInput{
+	datosError3 := models.FacturaInput{
 		ClienteNombre: "Juan Perez",
 		ClienteCedula: "1713175071", // Cédula válida
-		Productos: []ProductoInput{
+		Productos: []models.ProductoInput{
 			{
 				Codigo:         "PROD001",
 				Descripcion:    "Producto de prueba",
@@ -59,17 +64,17 @@ func probarValidaciones() {
 			},
 		},
 	}
-	_, err = CrearFactura(datosError3)
+	_, err = factory.CrearFactura(datosError3)
 	if err != nil {
 		fmt.Printf("   ❌ Error esperado: %v\n", err)
 	}
 	
 	// Test 4: Nombre vacío
 	fmt.Println("\n4. Nombre vacío:")
-	datosError4 := FacturaInput{
+	datosError4 := models.FacturaInput{
 		ClienteNombre: "", // Nombre vacío
 		ClienteCedula: "1713175071",
-		Productos: []ProductoInput{
+		Productos: []models.ProductoInput{
 			{
 				Codigo:         "PROD001",
 				Descripcion:    "Producto de prueba",
@@ -78,29 +83,29 @@ func probarValidaciones() {
 			},
 		},
 	}
-	_, err = CrearFactura(datosError4)
+	_, err = factory.CrearFactura(datosError4)
 	if err != nil {
 		fmt.Printf("   ❌ Error esperado: %v\n", err)
 	}
 	
 	// Test 5: Sin productos
 	fmt.Println("\n5. Sin productos:")
-	datosError5 := FacturaInput{
+	datosError5 := models.FacturaInput{
 		ClienteNombre: "Juan Perez",
 		ClienteCedula: "1713175071",
-		Productos:     []ProductoInput{}, // Lista vacía
+		Productos:     []models.ProductoInput{}, // Lista vacía
 	}
-	_, err = CrearFactura(datosError5)
+	_, err = factory.CrearFactura(datosError5)
 	if err != nil {
 		fmt.Printf("   ❌ Error esperado: %v\n", err)
 	}
 	
 	// Test 6: Datos válidos con múltiples productos
 	fmt.Println("\n6. Datos válidos con múltiples productos:")
-	datosValidos := FacturaInput{
+	datosValidos := models.FacturaInput{
 		ClienteNombre: "Maria Rodriguez",
 		ClienteCedula: "1713175071", // Cédula válida
-		Productos: []ProductoInput{
+		Productos: []models.ProductoInput{
 			{
 				Codigo:         "PROD001",
 				Descripcion:    "Producto A",
@@ -115,7 +120,7 @@ func probarValidaciones() {
 			},
 		},
 	}
-	factura, err := CrearFactura(datosValidos)
+	factura, err := factory.CrearFactura(datosValidos)
 	if err != nil {
 		fmt.Printf("   ❌ Error inesperado: %v\n", err)
 	} else {

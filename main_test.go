@@ -2,6 +2,10 @@ package main
 
 import (
 	"testing"
+	
+	"go-facturacion-sri/factory"
+	"go-facturacion-sri/models"
+	"go-facturacion-sri/validators"
 )
 
 // TestValidarCedula - Prueba la validación de cédulas ecuatorianas usando table-driven tests
@@ -54,7 +58,7 @@ func TestValidarCedula(t *testing.T) {
 	// Ejecutar cada caso de prueba
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := validarCedula(test.cedula)
+			err := validators.ValidarCedula(test.cedula)
 			
 			if test.shouldBeValid {
 				// Esperamos que sea válida (no error)
@@ -77,13 +81,13 @@ func TestValidarCedula(t *testing.T) {
 func TestValidarProducto(t *testing.T) {
 	tests := []struct {
 		name          string
-		producto      ProductoInput
+		producto      models.ProductoInput
 		shouldBeValid bool
 		description   string
 	}{
 		{
 			name: "producto_valido",
-			producto: ProductoInput{
+			producto: models.ProductoInput{
 				Codigo:         "LAPTOP001",
 				Descripcion:    "Laptop Dell",
 				Cantidad:       2.0,
@@ -94,7 +98,7 @@ func TestValidarProducto(t *testing.T) {
 		},
 		{
 			name: "codigo_vacio",
-			producto: ProductoInput{
+			producto: models.ProductoInput{
 				Codigo:         "", // Código vacío
 				Descripcion:    "Laptop Dell",
 				Cantidad:       2.0,
@@ -105,7 +109,7 @@ func TestValidarProducto(t *testing.T) {
 		},
 		{
 			name: "descripcion_vacia",
-			producto: ProductoInput{
+			producto: models.ProductoInput{
 				Codigo:         "LAPTOP001",
 				Descripcion:    "", // Descripción vacía
 				Cantidad:       2.0,
@@ -116,7 +120,7 @@ func TestValidarProducto(t *testing.T) {
 		},
 		{
 			name: "cantidad_cero",
-			producto: ProductoInput{
+			producto: models.ProductoInput{
 				Codigo:         "LAPTOP001",
 				Descripcion:    "Laptop Dell",
 				Cantidad:       0.0, // Cantidad cero
@@ -127,7 +131,7 @@ func TestValidarProducto(t *testing.T) {
 		},
 		{
 			name: "precio_negativo",
-			producto: ProductoInput{
+			producto: models.ProductoInput{
 				Codigo:         "LAPTOP001",
 				Descripcion:    "Laptop Dell",
 				Cantidad:       2.0,
@@ -140,7 +144,7 @@ func TestValidarProducto(t *testing.T) {
 	
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := validarProducto(test.producto)
+			err := validators.ValidarProducto(test.producto)
 			
 			if test.shouldBeValid {
 				if err != nil {
@@ -161,17 +165,17 @@ func TestValidarProducto(t *testing.T) {
 func TestCrearFactura(t *testing.T) {
 	tests := []struct {
 		name          string
-		input         FacturaInput
+		input         models.FacturaInput
 		shouldBeValid bool
 		expectedTotal float64 // Total esperado si es válida
 		description   string
 	}{
 		{
 			name: "factura_valida_un_producto",
-			input: FacturaInput{
+			input: models.FacturaInput{
 				ClienteNombre: "Juan Perez",
 				ClienteCedula: "1713175071",
-				Productos: []ProductoInput{
+				Productos: []models.ProductoInput{
 					{
 						Codigo:         "PROD001",
 						Descripcion:    "Producto de prueba",
@@ -186,10 +190,10 @@ func TestCrearFactura(t *testing.T) {
 		},
 		{
 			name: "factura_valida_multiples_productos",
-			input: FacturaInput{
+			input: models.FacturaInput{
 				ClienteNombre: "Maria Rodriguez",
 				ClienteCedula: "1713175071",
-				Productos: []ProductoInput{
+				Productos: []models.ProductoInput{
 					{
 						Codigo:         "PROD001",
 						Descripcion:    "Producto A",
@@ -210,10 +214,10 @@ func TestCrearFactura(t *testing.T) {
 		},
 		{
 			name: "cedula_invalida",
-			input: FacturaInput{
+			input: models.FacturaInput{
 				ClienteNombre: "Juan Perez",
 				ClienteCedula: "123456789", // Cédula inválida
-				Productos: []ProductoInput{
+				Productos: []models.ProductoInput{
 					{
 						Codigo:         "PROD001",
 						Descripcion:    "Producto",
@@ -228,10 +232,10 @@ func TestCrearFactura(t *testing.T) {
 		},
 		{
 			name: "sin_productos",
-			input: FacturaInput{
+			input: models.FacturaInput{
 				ClienteNombre: "Juan Perez",
 				ClienteCedula: "1713175071",
-				Productos:     []ProductoInput{}, // Sin productos
+				Productos:     []models.ProductoInput{}, // Sin productos
 			},
 			shouldBeValid: false,
 			expectedTotal: 0,
@@ -241,7 +245,7 @@ func TestCrearFactura(t *testing.T) {
 	
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			factura, err := CrearFactura(test.input)
+			factura, err := factory.CrearFactura(test.input)
 			
 			if test.shouldBeValid {
 				// Esperamos que sea válida
