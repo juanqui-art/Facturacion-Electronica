@@ -9,15 +9,20 @@ import (
 	"time"
 )
 
+// ProductoInput - Datos de un producto individual
+type ProductoInput struct {
+	Codigo         string
+	Descripcion    string
+	Cantidad       float64
+	PrecioUnitario float64
+}
+
 // FacturaInput - Datos simples para crear una factura
-// Esto es lo que el usuario final proporcionará
+// Ahora soporta múltiples productos!
 type FacturaInput struct {
-	ClienteNombre       string
-	ClienteCedula       string
-	ProductoCodigo      string
-	ProductoDescripcion string
-	Cantidad            float64
-	PrecioUnitario      float64
+	ClienteNombre string
+	ClienteCedula string
+	Productos     []ProductoInput // Slice de productos!
 }
 
 // InfoTributaria - Datos básicos del emisor (obligatorios SRI)
@@ -118,6 +123,31 @@ func validarCedula(cedula string) error {
 	return nil // nil significa "no hay error"
 }
 
+// validarProducto - Valida un producto individual
+func validarProducto(producto ProductoInput) error {
+	// Validar código de producto
+	if producto.Codigo == "" {
+		return errors.New("el código del producto no puede estar vacío")
+	}
+	
+	// Validar descripción
+	if producto.Descripcion == "" {
+		return errors.New("la descripción del producto no puede estar vacía")
+	}
+	
+	// Validar cantidad
+	if producto.Cantidad <= 0 {
+		return errors.New("la cantidad debe ser mayor a cero")
+	}
+	
+	// Validar precio
+	if producto.PrecioUnitario <= 0 {
+		return errors.New("el precio unitario debe ser mayor a cero")
+	}
+	
+	return nil
+}
+
 // validarFacturaInput - Valida todos los datos de entrada
 func validarFacturaInput(input FacturaInput) error {
 	// Validar nombre del cliente
@@ -130,24 +160,16 @@ func validarFacturaInput(input FacturaInput) error {
 		return fmt.Errorf("cédula inválida: %v", err)
 	}
 	
-	// Validar código de producto
-	if input.ProductoCodigo == "" {
-		return errors.New("el código del producto no puede estar vacío")
+	// Validar que tenga al menos un producto
+	if len(input.Productos) == 0 {
+		return errors.New("debe incluir al menos un producto")
 	}
 	
-	// Validar descripción
-	if input.ProductoDescripcion == "" {
-		return errors.New("la descripción del producto no puede estar vacía")
-	}
-	
-	// Validar cantidad
-	if input.Cantidad <= 0 {
-		return errors.New("la cantidad debe ser mayor a cero")
-	}
-	
-	// Validar precio
-	if input.PrecioUnitario <= 0 {
-		return errors.New("el precio unitario debe ser mayor a cero")
+	// Validar cada producto usando un loop
+	for i, producto := range input.Productos {
+		if err := validarProducto(producto); err != nil {
+			return fmt.Errorf("producto %d inválido: %v", i+1, err)
+		}
 	}
 	
 	return nil
@@ -161,8 +183,32 @@ func CrearFactura(input FacturaInput) (Factura, error) {
 	if err := validarFacturaInput(input); err != nil {
 		return Factura{}, err // Devolvemos factura vacía y el error
 	}
-	// Calcular totales automáticamente
-	subtotal := input.Cantidad * input.PrecioUnitario
+	
+	// Calcular totales de TODOS los productos
+	var subtotal float64 = 0
+	var detalles []Detalle // Slice vacío para ir agregando productos
+	
+	// Procesar cada producto
+	for _, producto := range input.Productos {
+		// Calcular subtotal de este producto
+		subtotalProducto := producto.Cantidad * producto.PrecioUnitario
+		subtotal += subtotalProducto // Sumar al total general
+		
+		// Crear detalle para este producto
+		detalle := Detalle{
+			CodigoPrincipal:        producto.Codigo,
+			Descripcion:            producto.Descripcion,
+			Cantidad:               producto.Cantidad,
+			PrecioUnitario:         producto.PrecioUnitario,
+			Descuento:              0.00,
+			PrecioTotalSinImpuesto: subtotalProducto,
+		}
+		
+		// Agregar al slice de detalles
+		detalles = append(detalles, detalle)
+	}
+	
+	// Calcular IVA sobre el subtotal total
 	iva := subtotal * 0.15  // 15% IVA Ecuador
 	total := subtotal + iva
 	
@@ -190,16 +236,7 @@ func CrearFactura(input FacturaInput) (Factura, error) {
 			ImporteTotal:                total,
 			Moneda:                      "DOLAR",
 		},
-		Detalles: []Detalle{
-			{
-				CodigoPrincipal:        input.ProductoCodigo,
-				Descripcion:            input.ProductoDescripcion,
-				Cantidad:               input.Cantidad,
-				PrecioUnitario:         input.PrecioUnitario,
-				Descuento:              0.00,
-				PrecioTotalSinImpuesto: subtotal,
-			},
-		},
+		Detalles: detalles, // Usar el slice que construimos en el loop
 	}
 	
 	return factura, nil // nil significa "no hay error"
@@ -246,14 +283,30 @@ func main() {
 	fmt.Println("🚀 GENERANDO FACTURA PRINCIPAL")
 	fmt.Println(strings.Repeat("=", 50))
 	
-	// Crear datos de factura - ¡Mucho más simple!
+	// Crear datos de factura - ¡Ahora con múltiples productos!
 	facturaData := FacturaInput{
-		ClienteNombre:       "JUAN CARLOS PEREZ",
-		ClienteCedula:       "1713175071", // Cédula válida para Ecuador
-		ProductoCodigo:      "LAPTOP001",
-		ProductoDescripcion: "Laptop Dell Inspiron 15",
-		Cantidad:            2.0,
-		PrecioUnitario:      450.00,
+		ClienteNombre: "JUAN CARLOS PEREZ",
+		ClienteCedula: "1713175071", // Cédula válida para Ecuador
+		Productos: []ProductoInput{
+			{
+				Codigo:         "LAPTOP001",
+				Descripcion:    "Laptop Dell Inspiron 15",
+				Cantidad:       2.0,
+				PrecioUnitario: 450.00,
+			},
+			{
+				Codigo:         "MOUSE001",
+				Descripcion:    "Mouse Inalámbrico Logitech",
+				Cantidad:       3.0,
+				PrecioUnitario: 25.00,
+			},
+			{
+				Codigo:         "TECLADO001",
+				Descripcion:    "Teclado Mecánico RGB",
+				Cantidad:       1.0,
+				PrecioUnitario: 85.00,
+			},
+		},
 	}
 	
 	// Generar factura usando nuestra función factory
