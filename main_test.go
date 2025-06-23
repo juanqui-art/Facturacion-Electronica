@@ -3,10 +3,17 @@ package main
 import (
 	"testing"
 	
+	"go-facturacion-sri/config"
 	"go-facturacion-sri/factory"
 	"go-facturacion-sri/models"
 	"go-facturacion-sri/validators"
 )
+
+// init se ejecuta automáticamente antes de los tests
+func init() {
+	// Cargar configuración por defecto para tests
+	config.CargarConfiguracionPorDefecto()
+}
 
 // TestValidarCedula - Prueba la validación de cédulas ecuatorianas usando table-driven tests
 func TestValidarCedula(t *testing.T) {

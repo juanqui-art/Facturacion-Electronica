@@ -4,11 +4,24 @@ import (
 	"fmt"
 	"strings"
 	
+	"go-facturacion-sri/config"
 	"go-facturacion-sri/factory"
 	"go-facturacion-sri/models"
 )
 
 func main() {
+	// Cargar configuración al inicio
+	fmt.Println("📋 Cargando configuración del sistema...")
+	err := config.CargarConfiguracion("config/desarrollo.json")
+	if err != nil {
+		fmt.Printf("⚠️  Error cargando configuración: %v\n", err)
+		fmt.Println("📦 Usando configuración por defecto...")
+		config.CargarConfiguracionPorDefecto()
+	} else {
+		fmt.Printf("✅ Configuración cargada: %s\n", config.Config.Empresa.RazonSocial)
+		fmt.Printf("🏢 Ambiente: %s\n", config.Config.Ambiente.Descripcion)
+	}
+	
 	// Primero, ejecutar pruebas de validación
 	probarValidaciones()
 	

@@ -30,6 +30,8 @@ Thumbs.db
 
 # Archivos de configuración local
 config.local.json
+config/local.json
+config/mi-empresa.json
 *.env
 
 # Archivos de log

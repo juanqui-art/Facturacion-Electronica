@@ -1,0 +1,14 @@
+{
+  "empresa": {
+    "razonSocial": "TU EMPRESA REAL S.A.",
+    "ruc": "0987654321001",
+    "establecimiento": "001", 
+    "puntoEmision": "001",
+    "direccion": "Dirección real de tu empresa"
+  },
+  "ambiente": {
+    "codigo": "2",
+    "descripcion": "Ambiente de Producción - SRI Real",
+    "tipoEmision": "1"
+  }
+}

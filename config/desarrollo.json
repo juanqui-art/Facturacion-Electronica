@@ -1,0 +1,14 @@
+{
+  "empresa": {
+    "razonSocial": "EMPRESA DEMO S.A.",
+    "ruc": "1234567890001",
+    "establecimiento": "001",
+    "puntoEmision": "001",
+    "direccion": "Av. Amazonas y Naciones Unidas, Quito, Ecuador"
+  },
+  "ambiente": {
+    "codigo": "1",
+    "descripcion": "Ambiente de Pruebas - Desarrollo",
+    "tipoEmision": "1"
+  }
+}
