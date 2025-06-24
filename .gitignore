@@ -1,3 +1,58 @@
+# ====================
+# ARCHIVOS DE SEGURIDAD CRÍTICOS (NUNCA EN GIT)
+# ====================
+
+# Certificados digitales y llaves privadas
+*.p12
+*.pfx
+*.key
+*.pem
+*.crt
+*.cer
+*.jks
+*.keystore
+certificados/
+certificates/
+keys/
+ssl/
+
+# Archivos de configuración con datos sensibles
+config/produccion.json
+config/production.json
+config/local.json
+config/mi-empresa.json
+config/empresa-*.json
+.env
+.env.local
+.env.production
+.env.staging
+secrets.json
+credentials.json
+
+# ====================
+# BASES DE DATOS Y ARCHIVOS DE DATOS
+# ====================
+
+# Bases de datos locales
+*.db
+*.sqlite
+*.sqlite3
+database/*.db
+demo_*.db
+*_test.db
+backup_*.db
+
+# Archivos de datos sensibles
+data/
+backups/
+exports/
+*.sql
+*.dump
+
+# ====================
+# ARCHIVOS DE GO
+# ====================
+
 # Binarios compilados de Go
 *.exe
 *.exe~
@@ -6,37 +61,148 @@
 *.dylib
 go-facturacion-sri
 facturacion-sri
+main
+cmd/main
+bin/
 
-# Archivos de test
+# Archivos de test y coverage
 *.test
 *.out
-
-# Archivos de coverage
+coverage.html
+coverage.out
 *.coverage
+test_results/
+.coverage/
 
-# Archivos de módulos Go
-go.sum
+# ====================
+# ARCHIVOS DEL IDE Y EDITORES
+# ====================
 
-# Archivos del IDE
+# Visual Studio Code
 .vscode/
+*.code-workspace
+
+# IntelliJ IDEA / GoLand
 .idea/
+*.iml
+*.ipr
+*.iws
+
+# Vim
 *.swp
 *.swo
 *~
+.netrwhist
 
-# Archivos del sistema
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# ====================
+# ARCHIVOS DEL SISTEMA
+# ====================
+
+# macOS
 .DS_Store
-Thumbs.db
+.AppleDouble
+.LSOverride
+Icon?
+._*
 
-# Archivos de configuración local
-config.local.json
-config/local.json
-config/mi-empresa.json
-*.env
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ====================
+# ARCHIVOS DE BUILD Y DEPLOYMENT
+# ====================
+
+# Build artifacts
+dist/
+build/
+release/
+*.tar.gz
+*.zip
+*.rar
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+.docker/
+
+# Kubernetes
+k8s-secrets.yaml
+*-secret.yaml
+
+# ====================
+# ARCHIVOS DE DESARROLLO
+# ====================
 
 # Archivos de log
 *.log
+logs/
+log/
 
 # Archivos temporales
 tmp/
 temp/
+.tmp/
+*.tmp
+
+# Archivos de cache
+.cache/
+cache/
+
+# Node modules (si usas herramientas JS)
+node_modules/
+package-lock.json
+
+# ====================
+# ARCHIVOS DE MONITORING Y DEBUG
+# ====================
+
+# Profiling files
+*.prof
+*.pprof
+cpu.prof
+mem.prof
+block.prof
+
+# Debug files
+debug
+*.debug
+
+# ====================
+# ARCHIVOS DE TERCEROS
+# ====================
+
+# Vendor directory (si no usas Go modules)
+vendor/
+
+# Dependency directories
+.vendor/
+
+# ====================
+# NOTAS IMPORTANTES
+# ====================
+
+# Los siguientes archivos SÍ deben estar en Git:
+# - go.mod y go.sum (necesarios para reproducibilidad)
+# - docs/ (documentación estratégica importante)
+# - CLAUDE.md (instrucciones del proyecto)
+# - README.md (documentación principal)
+# - config/desarrollo.json (configuración no sensible)
