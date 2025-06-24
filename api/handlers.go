@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"go-facturacion-sri/factory"
@@ -34,9 +35,130 @@ type HealthResponse struct {
 	Service   string    `json:"service"`
 }
 
-// Almacenamiento temporal en memoria (en el futuro será base de datos)
-var facturaStorage = make(map[string]FacturaResponse)
-var nextID = 1
+// FacturaStorageInterface define el contrato para almacenamiento de facturas
+type FacturaStorageInterface interface {
+	Store(id string, factura FacturaResponse)
+	Get(id string) (FacturaResponse, bool)
+	GetAll() []FacturaResponse
+	GetNextID() int
+	Count() int
+}
+
+// FacturaStorage representa un almacenamiento thread-safe de facturas
+type FacturaStorage struct {
+	mu       sync.RWMutex
+	facturas map[string]FacturaResponse
+	nextID   int
+}
+
+// NewFacturaStorage crea una nueva instancia de almacenamiento thread-safe
+func NewFacturaStorage() *FacturaStorage {
+	return &FacturaStorage{
+		facturas: make(map[string]FacturaResponse),
+		nextID:   1,
+	}
+}
+
+// Store almacena una factura de forma thread-safe
+func (fs *FacturaStorage) Store(id string, factura FacturaResponse) {
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+	fs.facturas[id] = factura
+}
+
+// Get obtiene una factura de forma thread-safe
+func (fs *FacturaStorage) Get(id string) (FacturaResponse, bool) {
+	fs.mu.RLock()
+	defer fs.mu.RUnlock()
+	factura, exists := fs.facturas[id]
+	return factura, exists
+}
+
+// GetAll obtiene todas las facturas de forma thread-safe
+func (fs *FacturaStorage) GetAll() []FacturaResponse {
+	fs.mu.RLock()
+	defer fs.mu.RUnlock()
+	
+	facturas := make([]FacturaResponse, 0, len(fs.facturas))
+	for _, factura := range fs.facturas {
+		// No incluir XML en la lista para reducir payload
+		factura.XML = ""
+		facturas = append(facturas, factura)
+	}
+	return facturas
+}
+
+// GetNextID obtiene el siguiente ID de forma thread-safe
+func (fs *FacturaStorage) GetNextID() int {
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+	id := fs.nextID
+	fs.nextID++
+	return id
+}
+
+// Count retorna el número total de facturas
+func (fs *FacturaStorage) Count() int {
+	fs.mu.RLock()
+	defer fs.mu.RUnlock()
+	return len(fs.facturas)
+}
+
+// Almacenamiento global thread-safe
+var storage FacturaStorageInterface = NewFacturaStorage()
+
+// SetStorage permite cambiar la implementación de storage (útil para testing)
+func SetStorage(s FacturaStorageInterface) {
+	storage = s
+}
+
+// LoggingFacturaStorage es una implementación que añade logging al storage
+type LoggingFacturaStorage struct {
+	underlying FacturaStorageInterface
+}
+
+// NewLoggingFacturaStorage crea un storage con logging
+func NewLoggingFacturaStorage(underlying FacturaStorageInterface) *LoggingFacturaStorage {
+	return &LoggingFacturaStorage{
+		underlying: underlying,
+	}
+}
+
+// Store implementa FacturaStorageInterface con logging
+func (lfs *LoggingFacturaStorage) Store(id string, factura FacturaResponse) {
+	fmt.Printf("🗄️  Almacenando factura: %s\n", id)
+	lfs.underlying.Store(id, factura)
+}
+
+// Get implementa FacturaStorageInterface con logging
+func (lfs *LoggingFacturaStorage) Get(id string) (FacturaResponse, bool) {
+	fmt.Printf("🔍 Buscando factura: %s\n", id)
+	factura, exists := lfs.underlying.Get(id)
+	if !exists {
+		fmt.Printf("❌ Factura no encontrada: %s\n", id)
+	}
+	return factura, exists
+}
+
+// GetAll implementa FacturaStorageInterface con logging
+func (lfs *LoggingFacturaStorage) GetAll() []FacturaResponse {
+	fmt.Printf("📋 Listando todas las facturas\n")
+	return lfs.underlying.GetAll()
+}
+
+// GetNextID implementa FacturaStorageInterface con logging
+func (lfs *LoggingFacturaStorage) GetNextID() int {
+	id := lfs.underlying.GetNextID()
+	fmt.Printf("🔢 Generando nuevo ID: %d\n", id)
+	return id
+}
+
+// Count implementa FacturaStorageInterface con logging
+func (lfs *LoggingFacturaStorage) Count() int {
+	count := lfs.underlying.Count()
+	fmt.Printf("📊 Total de facturas: %d\n", count)
+	return count
+}
 
 // handleHealth - Health check endpoint
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -109,18 +231,13 @@ func (s *Server) handleFacturas(w http.ResponseWriter, r *http.Request) {
 
 // handleListFacturas - Lista todas las facturas
 func (s *Server) handleListFacturas(w http.ResponseWriter, r *http.Request) {
-	facturas := make([]FacturaResponse, 0, len(facturaStorage))
-	
-	for _, factura := range facturaStorage {
-		// No incluir XML en la lista para reducir payload
-		factura.XML = ""
-		facturas = append(facturas, factura)
-	}
+	facturas := storage.GetAll()
+	total := storage.Count()
 
 	response := map[string]interface{}{
 		"facturas": facturas,
-		"total":    len(facturas),
-		"message":  fmt.Sprintf("Se encontraron %d facturas", len(facturas)),
+		"total":    total,
+		"message":  fmt.Sprintf("Se encontraron %d facturas", total),
 	}
 
 	writeJSONResponse(w, http.StatusOK, response)
@@ -144,8 +261,8 @@ func (s *Server) handleCreateFactura(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Generar ID único
+	nextID := storage.GetNextID()
 	id := fmt.Sprintf("FAC-%06d", nextID)
-	nextID++
 
 	// Crear respuesta
 	response := FacturaResponse{
@@ -165,8 +282,8 @@ func (s *Server) handleCreateFactura(w http.ResponseWriter, r *http.Request) {
 		response.XML = string(xmlData)
 	}
 
-	// Guardar en storage temporal
-	facturaStorage[id] = response
+	// Guardar en storage thread-safe
+	storage.Store(id, response)
 
 	writeJSONResponse(w, http.StatusCreated, response)
 }
@@ -186,7 +303,7 @@ func (s *Server) handleFacturaByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Buscar factura
-	factura, exists := facturaStorage[path]
+	factura, exists := storage.Get(path)
 	if !exists {
 		writeErrorResponse(w, http.StatusNotFound, "Factura no encontrada")
 		return
