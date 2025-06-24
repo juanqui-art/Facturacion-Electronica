@@ -1,4 +1,4 @@
-// Demo específico del cliente SOAP para SRI Ecuador
+// Package sri Demo específico del cliente SOAP para SRI Ecuador
 package sri
 
 import (

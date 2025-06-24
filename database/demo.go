@@ -1,4 +1,4 @@
-// Demo del sistema de base de datos
+// Package database Demo del sistema de base de datos
 package database
 
 import (
