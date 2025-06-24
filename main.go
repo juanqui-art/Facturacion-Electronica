@@ -2,11 +2,15 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	
+	"go-facturacion-sri/api"
 	"go-facturacion-sri/config"
+	"go-facturacion-sri/database"
 	"go-facturacion-sri/factory"
 	"go-facturacion-sri/models"
+	"go-facturacion-sri/sri"
 )
 
 func main() {
@@ -21,6 +25,67 @@ func main() {
 		fmt.Printf("✅ Configuración cargada: %s\n", config.Config.Empresa.RazonSocial)
 		fmt.Printf("🏢 Ambiente: %s\n", config.Config.Ambiente.Descripcion)
 	}
+	
+	// Verificar si queremos ejecutar en modo API, SRI demo o modo demo
+	if len(os.Args) > 1 && os.Args[1] == "api" {
+		// Modo API: Iniciar servidor HTTP
+		fmt.Println("\n" + strings.Repeat("=", 50))
+		fmt.Println("🌐 INICIANDO SERVIDOR HTTP API")
+		fmt.Println(strings.Repeat("=", 50))
+		
+		port := "8080"
+		if len(os.Args) > 2 {
+			port = os.Args[2]
+		}
+		
+		server := api.NewServer(port)
+		if err := server.Start(); err != nil {
+			fmt.Printf("❌ Error iniciando servidor: %v\n", err)
+			os.Exit(1)
+		}
+		return
+	}
+	
+	// Modo SRI Demo: Demostrar funcionalidades de integración SRI
+	if len(os.Args) > 1 && os.Args[1] == "sri" {
+		sri.DemoSRI()
+		return
+	}
+	
+	// Modo SOAP Demo: Demostrar cliente SOAP
+	if len(os.Args) > 1 && os.Args[1] == "soap" {
+		sri.DemoSOAPClient()
+		return
+	}
+	
+	// Modo Database Demo: Demostrar sistema de base de datos
+	if len(os.Args) > 1 && os.Args[1] == "database" {
+		database.DemoDatabase()
+		return
+	}
+	
+	// Modo Test SRI: Tests de integración con SRI real
+	if len(os.Args) > 1 && os.Args[1] == "test-sri" {
+		sri.DemoTestIntegracion()
+		return
+	}
+	
+	// Modo Certificación: Guía de certificación SRI
+	if len(os.Args) > 1 && os.Args[1] == "certificacion" {
+		sri.MostrarGuiaCertificacion()
+		return
+	}
+	
+	// Modo demo: Ejecutar ejemplos y pruebas
+	fmt.Println("\n" + strings.Repeat("=", 50))
+	fmt.Println("🧪 MODO DEMO - Ejecutando ejemplos")
+	fmt.Println("💡 Para modo API: go run main.go test_validaciones.go api")
+	fmt.Println("🇪🇨 Para demo SRI: go run main.go test_validaciones.go sri")
+	fmt.Println("🌐 Para demo SOAP: go run main.go test_validaciones.go soap")
+	fmt.Println("🗄️  Para demo DB: go run main.go test_validaciones.go database")
+	fmt.Println("🧪 Para test SRI: go run main.go test_validaciones.go test-sri")
+	fmt.Println("📋 Para certificación: go run main.go test_validaciones.go certificacion")
+	fmt.Println(strings.Repeat("=", 50))
 	
 	// Primero, ejecutar pruebas de validación
 	probarValidaciones()
