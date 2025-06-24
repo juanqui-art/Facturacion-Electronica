@@ -57,6 +57,21 @@ type ResultadoReintento struct {
 	Errores         []error       `json:"errores"`
 }
 
+// String implementa la interfaz Stringer para ResultadoReintento
+func (r *ResultadoReintento) String() string {
+	var builder strings.Builder
+	builder.WriteString(fmt.Sprintf("ResultadoReintento{\n"))
+	builder.WriteString(fmt.Sprintf("  Exitoso: %t\n", r.Exitoso))
+	builder.WriteString(fmt.Sprintf("  Intentos: %d\n", r.IntentosRealizados))
+	builder.WriteString(fmt.Sprintf("  Tiempo Total: %v\n", r.TiempoTotal))
+	if r.UltimoError != nil {
+		builder.WriteString(fmt.Sprintf("  Último Error: %v\n", r.UltimoError))
+	}
+	builder.WriteString(fmt.Sprintf("  Total Errores: %d\n", len(r.Errores)))
+	builder.WriteString("}")
+	return builder.String()
+}
+
 // FuncionReintentable función que puede ser reintentada
 type FuncionReintentable func() error
 

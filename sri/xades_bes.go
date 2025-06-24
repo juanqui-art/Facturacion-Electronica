@@ -299,3 +299,38 @@ func ValidarFirmaXAdESBES(xmlFirmado []byte) error {
 	// Por ahora retornamos nil (validación pendiente de implementar)
 	return nil
 }
+
+// ExtraerCertificadoDeXML extrae el certificado X.509 de un XML firmado (stub)
+func ExtraerCertificadoDeXML(xmlData []byte) (*CertificadoDigital, error) {
+	// Stub implementation - TODO: implementar extracción real
+	if len(xmlData) == 0 {
+		return nil, fmt.Errorf("XML vacío")
+	}
+	return nil, fmt.Errorf("extracción de certificado no implementada")
+}
+
+// GenerarHashSHA1 genera hash SHA1 de datos (stub)
+func GenerarHashSHA1(data []byte) string {
+	// Stub implementation - TODO: implementar hash real
+	hash := sha256.Sum256(data)
+	return fmt.Sprintf("%x", hash)[:40] // Truncar a 40 chars para simular SHA1
+}
+
+// CrearTimestamp crea timestamp para XAdES (stub)
+func CrearTimestamp() string {
+	// Stub implementation - TODO: implementar timestamp real
+	return time.Now().UTC().Format(time.RFC3339)
+}
+
+// NormalizarXML normaliza XML para canonicalización (stub)
+func NormalizarXML(xmlData []byte) []byte {
+	// Stub implementation - TODO: implementar normalización real
+	return xmlData
+}
+
+// CrearDigestValue crea digest value para XAdES (stub)
+func CrearDigestValue(xmlData []byte) string {
+	// Stub implementation - TODO: implementar digest real
+	hash := sha256.Sum256(xmlData)
+	return base64.StdEncoding.EncodeToString(hash[:])
+}

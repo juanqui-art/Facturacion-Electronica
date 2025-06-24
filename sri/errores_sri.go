@@ -65,6 +65,24 @@ func (e *ErrorSRI) Error() string {
 	return fmt.Sprintf("[%s] %s: %s", e.Tipo, e.Codigo, e.Mensaje)
 }
 
+// String implementa la interfaz Stringer para mejor presentación
+func (e *ErrorSRI) String() string {
+	var builder strings.Builder
+	builder.WriteString(fmt.Sprintf("ErrorSRI{\n"))
+	builder.WriteString(fmt.Sprintf("  Tipo: %s\n", e.Tipo))
+	builder.WriteString(fmt.Sprintf("  Código: %s\n", e.Codigo))
+	builder.WriteString(fmt.Sprintf("  Mensaje: %s\n", e.Mensaje))
+	if e.Detalle != "" {
+		builder.WriteString(fmt.Sprintf("  Detalle: %s\n", e.Detalle))
+	}
+	builder.WriteString(fmt.Sprintf("  Recuperable: %t\n", e.Recuperable))
+	if e.SugerenciaFix != "" {
+		builder.WriteString(fmt.Sprintf("  Sugerencia: %s\n", e.SugerenciaFix))
+	}
+	builder.WriteString("}")
+	return builder.String()
+}
+
 // IsRecuperable indica si el error es recuperable con reintentos
 func (e *ErrorSRI) IsRecuperable() bool {
 	return e.Recuperable
