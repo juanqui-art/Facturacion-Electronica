@@ -99,7 +99,6 @@ test_results/
 *.sublime-workspace
 
 # Emacs
-*~
 \#*\#
 /.emacs.desktop
 /.emacs.desktop.lock
@@ -123,7 +122,6 @@ Desktop.ini
 $RECYCLE.BIN/
 
 # Linux
-*~
 .directory
 .Trash-*
 
