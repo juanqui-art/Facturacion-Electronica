@@ -7,7 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -184,7 +184,7 @@ func (c *SOAPClient) EnviarComprobante(xmlComprobante []byte) (*RespuestaSolicit
 	defer resp.Body.Close()
 
 	// Leer respuesta
-	respBody, err := ioutil.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error leyendo respuesta del SRI: %v", err)
 	}
@@ -245,7 +245,7 @@ func (c *SOAPClient) ConsultarAutorizacion(claveAcceso string) (*RespuestaCompro
 	defer resp.Body.Close()
 
 	// Leer respuesta
-	respBody, err := ioutil.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error leyendo respuesta del SRI: %v", err)
 	}

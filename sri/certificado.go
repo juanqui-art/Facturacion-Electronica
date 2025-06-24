@@ -5,7 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"software.sslmate.com/src/go-pkcs12"
 	"time"
 )
@@ -30,7 +30,7 @@ type CertificadoConfig struct {
 // CargarCertificado carga un certificado PKCS#12 desde archivo
 func CargarCertificado(config CertificadoConfig) (*CertificadoDigital, error) {
 	// Leer el archivo .p12
-	data, err := ioutil.ReadFile(config.RutaArchivo)
+	data, err := os.ReadFile(config.RutaArchivo)
 	if err != nil {
 		return nil, fmt.Errorf("error leyendo certificado: %v", err)
 	}
