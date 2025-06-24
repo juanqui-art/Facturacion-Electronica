@@ -3,11 +3,11 @@ package database
 
 import (
 	"fmt"
-	"strings"
-	"time"
 	"go-facturacion-sri/factory"
 	"go-facturacion-sri/models"
 	"go-facturacion-sri/sri"
+	"strings"
+	"time"
 )
 
 // DemoDatabase ejecuta una demostración completa del sistema de base de datos
@@ -19,14 +19,14 @@ func DemoDatabase() {
 	// Demo 1: Inicializar base de datos
 	fmt.Println("\n1️⃣ INICIALIZACIÓN DE BASE DE DATOS")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	db, err := New("database/demo_facturacion.db")
 	if err != nil {
 		fmt.Printf("❌ Error inicializando base de datos: %v\n", err)
 		return
 	}
 	defer db.Close()
-	
+
 	fmt.Println("✅ Base de datos inicializada correctamente")
 	fmt.Println("📂 Archivo: database/demo_facturacion.db")
 	fmt.Println("📋 Tablas creadas: facturas, productos, clientes, configuracion")
@@ -34,7 +34,7 @@ func DemoDatabase() {
 	// Demo 2: Crear y guardar facturas
 	fmt.Println("\n2️⃣ CREACIÓN Y GUARDADO DE FACTURAS")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	facturas := []models.FacturaInput{
 		{
 			ClienteNombre: "EMPRESA TECNOLOGIA XYZ S.A.",
@@ -87,10 +87,10 @@ func DemoDatabase() {
 	}
 
 	var facturasGuardadas []*FacturaDB
-	
+
 	for i, facturaData := range facturas {
 		fmt.Printf("\n📝 Procesando factura %d: %s\n", i+1, facturaData.ClienteNombre)
-		
+
 		// Crear factura
 		factura, err := factory.CrearFactura(facturaData)
 		if err != nil {
@@ -123,7 +123,7 @@ func DemoDatabase() {
 		}
 
 		facturasGuardadas = append(facturasGuardadas, facturaDB)
-		
+
 		fmt.Printf("✅ Factura guardada: %s\n", facturaDB.NumeroFactura)
 		fmt.Printf("💰 Total: $%.2f\n", facturaDB.Total)
 		fmt.Printf("🔑 Clave: %s\n", sri.FormatearClaveAcceso(facturaDB.ClaveAcceso))
@@ -132,13 +132,13 @@ func DemoDatabase() {
 	// Demo 3: Listar facturas
 	fmt.Println("\n3️⃣ LISTADO DE FACTURAS")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	todasFacturas, err := db.ListarFacturas(10, 0)
 	if err != nil {
 		fmt.Printf("❌ Error listando facturas: %v\n", err)
 	} else {
 		fmt.Printf("📊 Total de facturas en base de datos: %d\n", len(todasFacturas))
-		
+
 		for i, factura := range todasFacturas {
 			fmt.Printf("\n%d. %s\n", i+1, factura.NumeroFactura)
 			fmt.Printf("   👤 Cliente: %s\n", factura.ClienteNombre)
@@ -151,18 +151,18 @@ func DemoDatabase() {
 	// Demo 4: Actualizar estados de facturas (simular autorización SRI)
 	fmt.Println("\n4️⃣ SIMULACIÓN DE AUTORIZACIÓN SRI")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	if len(facturasGuardadas) > 0 {
 		// Autorizar las primeras dos facturas
 		for i := 0; i < min(2, len(facturasGuardadas)); i++ {
 			factura := facturasGuardadas[i]
-			
+
 			fmt.Printf("\n🔐 Autorizando factura: %s\n", factura.NumeroFactura)
-			
+
 			// Simular respuesta del SRI
 			autorizacion := sri.SimularAutorizacionSRI(factura.ClaveAcceso, sri.Pruebas)
 			xmlAutorizado := fmt.Sprintf("<facturaAutorizada>XML autorizado para %s</facturaAutorizada>", factura.NumeroFactura)
-			
+
 			err := db.ActualizarEstadoFactura(
 				factura.ID,
 				"AUTORIZADA",
@@ -170,7 +170,7 @@ func DemoDatabase() {
 				xmlAutorizado,
 				"Factura autorizada automáticamente por el SRI",
 			)
-			
+
 			if err != nil {
 				fmt.Printf("❌ Error actualizando estado: %v\n", err)
 			} else {
@@ -183,10 +183,10 @@ func DemoDatabase() {
 	// Demo 5: Consultar factura específica con productos
 	fmt.Println("\n5️⃣ CONSULTA DETALLADA DE FACTURA")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	if len(facturasGuardadas) > 0 {
 		facturaID := facturasGuardadas[0].ID
-		
+
 		facturaDetalle, err := db.ObtenerFacturaPorID(facturaID)
 		if err != nil {
 			fmt.Printf("❌ Error obteniendo factura: %v\n", err)
@@ -197,11 +197,11 @@ func DemoDatabase() {
 			fmt.Printf("🧮 IVA: $%.2f\n", facturaDetalle.IVA)
 			fmt.Printf("💵 Total: $%.2f\n", facturaDetalle.Total)
 			fmt.Printf("📊 Estado: %s\n", facturaDetalle.Estado)
-			
+
 			if facturaDetalle.FechaAutorizacion != nil {
 				fmt.Printf("🔐 Fecha Autorización: %s\n", facturaDetalle.FechaAutorizacion.Format("02/01/2006 15:04:05"))
 			}
-			
+
 			// Obtener productos
 			productos, err := db.ObtenerProductosPorFactura(facturaID)
 			if err != nil {
@@ -220,7 +220,7 @@ func DemoDatabase() {
 	// Demo 6: Gestión de clientes
 	fmt.Println("\n6️⃣ GESTIÓN DE CLIENTES")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	clientesDemo := []*ClienteDB{
 		{
 			Cedula:      "1713175071",
@@ -239,10 +239,10 @@ func DemoDatabase() {
 			TipoCliente: "PERSONA_NATURAL",
 		},
 	}
-	
+
 	for i, clienteData := range clientesDemo {
 		fmt.Printf("\n👤 Guardando cliente %d: %s\n", i+1, clienteData.Nombre)
-		
+
 		cliente, err := db.GuardarCliente(clienteData)
 		if err != nil {
 			fmt.Printf("❌ Error guardando cliente: %v\n", err)
@@ -256,7 +256,7 @@ func DemoDatabase() {
 	// Demo 7: Estadísticas del sistema
 	fmt.Println("\n7️⃣ ESTADÍSTICAS DEL SISTEMA")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	estadisticas, err := db.EstadisticasFacturas()
 	if err != nil {
 		fmt.Printf("❌ Error obteniendo estadísticas: %v\n", err)
@@ -264,7 +264,7 @@ func DemoDatabase() {
 		fmt.Printf("📊 RESUMEN GENERAL\n")
 		fmt.Printf("   📋 Total facturas: %v\n", estadisticas["total_facturas"])
 		fmt.Printf("   💰 Total facturado: $%.2f\n", estadisticas["total_facturado"])
-		
+
 		if porEstado, ok := estadisticas["por_estado"].(map[string]int); ok {
 			fmt.Printf("\n📈 FACTURAS POR ESTADO:\n")
 			for estado, cantidad := range porEstado {
@@ -290,10 +290,10 @@ func DemoAPIDatabase() {
 	fmt.Println("\n" + strings.Repeat("=", 60))
 	fmt.Println("🌐 DEMO API CON BASE DE DATOS")
 	fmt.Println(strings.Repeat("=", 60))
-	
+
 	fmt.Println("\n📡 ENDPOINTS DISPONIBLES:")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	endpoints := []struct {
 		metodo      string
 		ruta        string
@@ -307,14 +307,14 @@ func DemoAPIDatabase() {
 		{"POST", "/api/clientes", "Crear/actualizar cliente"},
 		{"GET", "/api/clientes/buscar?cedula={cedula}", "Buscar cliente por cédula"},
 	}
-	
+
 	for _, endpoint := range endpoints {
 		fmt.Printf("   %s %-35s - %s\n", endpoint.metodo, endpoint.ruta, endpoint.descripcion)
 	}
-	
+
 	fmt.Println("\n🔧 EJEMPLOS DE USO:")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	fmt.Println("\n1. Crear factura:")
 	fmt.Println(`curl -X POST http://localhost:8080/api/facturas/db \
   -H "Content-Type: application/json" \
@@ -330,13 +330,13 @@ func DemoAPIDatabase() {
       }
     ]
   }'`)
-	
+
 	fmt.Println("\n2. Listar facturas:")
 	fmt.Println(`curl "http://localhost:8080/api/facturas/db/list?limit=5&offset=0"`)
-	
+
 	fmt.Println("\n3. Obtener factura específica:")
 	fmt.Println(`curl "http://localhost:8080/api/facturas/db/1?includeXML=true"`)
-	
+
 	fmt.Println("\n4. Actualizar estado de factura:")
 	fmt.Println(`curl -X PUT http://localhost:8080/api/facturas/db/1/estado \
   -H "Content-Type: application/json" \
@@ -345,10 +345,10 @@ func DemoAPIDatabase() {
     "numero_autorizacion": "1234567890123456789",
     "observaciones_sri": "Autorizada correctamente"
   }'`)
-	
+
 	fmt.Println("\n5. Obtener estadísticas:")
 	fmt.Println(`curl http://localhost:8080/api/estadisticas`)
-	
+
 	fmt.Println("\n6. Crear cliente:")
 	fmt.Println(`curl -X POST http://localhost:8080/api/clientes \
   -H "Content-Type: application/json" \
@@ -360,10 +360,10 @@ func DemoAPIDatabase() {
     "email": "juan@ejemplo.com",
     "tipoCliente": "PERSONA_NATURAL"
   }'`)
-	
+
 	fmt.Println("\n7. Buscar cliente:")
 	fmt.Println(`curl "http://localhost:8080/api/clientes/buscar?cedula=1713175071"`)
-	
+
 	fmt.Println("\n" + strings.Repeat("=", 60))
 	fmt.Println("✅ Para probar la API con base de datos:")
 	fmt.Println("   1. Ejecutar: go run main.go test_validaciones.go api")

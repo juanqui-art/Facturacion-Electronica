@@ -3,30 +3,30 @@ package sri
 
 import (
 	"fmt"
-	"strings"
-	"time"
 	"go-facturacion-sri/factory"
 	"go-facturacion-sri/models"
+	"strings"
+	"time"
 )
 
 // ConfigTestSRI configuración para tests con SRI real
 type ConfigTestSRI struct {
 	UsarAmbientePruebas bool   `json:"usar_ambiente_pruebas"`
-	RUCEmisor          string `json:"ruc_emisor"`
-	RutaCertificado    string `json:"ruta_certificado"`
+	RUCEmisor           string `json:"ruc_emisor"`
+	RutaCertificado     string `json:"ruta_certificado"`
 	PasswordCertificado string `json:"password_certificado"`
-	TimeoutSegundos    int    `json:"timeout_segundos"`
-	ValidarCertificado bool   `json:"validar_certificado"`
+	TimeoutSegundos     int    `json:"timeout_segundos"`
+	ValidarCertificado  bool   `json:"validar_certificado"`
 }
 
 // ConfigTestDefault configuración por defecto para tests
 var ConfigTestDefault = ConfigTestSRI{
 	UsarAmbientePruebas: true,
-	RUCEmisor:          "1792146739001", // RUC de prueba
-	RutaCertificado:    "", // Se debe configurar para tests reales
-	PasswordCertificado: "", // Se debe configurar para tests reales
-	TimeoutSegundos:    60,
-	ValidarCertificado: false, // Para tests sin certificado real
+	RUCEmisor:           "1792146739001", // RUC de prueba
+	RutaCertificado:     "",              // Se debe configurar para tests reales
+	PasswordCertificado: "",              // Se debe configurar para tests reales
+	TimeoutSegundos:     60,
+	ValidarCertificado:  false, // Para tests sin certificado real
 }
 
 // ResultadoTestIntegracion resultado de test de integración
@@ -53,11 +53,11 @@ func TestIntegracionBasico(config ConfigTestSRI) *ResultadoTestIntegracion {
 	fmt.Println("\n" + strings.Repeat("=", 60))
 	fmt.Println("🧪 TEST DE INTEGRACIÓN BÁSICO CON SRI ECUADOR")
 	fmt.Println(strings.Repeat("=", 60))
-	
+
 	// Etapa 1: Crear factura de prueba
 	fmt.Println("\n1️⃣ CREANDO FACTURA DE PRUEBA")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	facturaData := models.FacturaInput{
 		ClienteNombre: "CLIENTE TEST INTEGRACION SRI",
 		ClienteCedula: "1713175071", // Cédula válida para Ecuador
@@ -73,25 +73,25 @@ func TestIntegracionBasico(config ConfigTestSRI) *ResultadoTestIntegracion {
 
 	factura, err := factory.CrearFactura(facturaData)
 	if err != nil {
-		resultado.ErroresEncontrados = append(resultado.ErroresEncontrados, 
+		resultado.ErroresEncontrados = append(resultado.ErroresEncontrados,
 			fmt.Sprintf("Error creando factura: %v", err))
 		return resultado
 	}
-	
+
 	resultado.EtapasCompletadas = append(resultado.EtapasCompletadas, "Factura creada")
 	fmt.Printf("✅ Factura creada: Total $%.2f\n", factura.InfoFactura.ImporteTotal)
 
 	// Etapa 2: Generar XML
 	fmt.Println("\n2️⃣ GENERANDO XML SRI-COMPLIANT")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	xmlData, err := factura.GenerarXML()
 	if err != nil {
-		resultado.ErroresEncontrados = append(resultado.ErroresEncontrados, 
+		resultado.ErroresEncontrados = append(resultado.ErroresEncontrados,
 			fmt.Sprintf("Error generando XML: %v", err))
 		return resultado
 	}
-	
+
 	resultado.XMLGenerado = string(xmlData)
 	resultado.EtapasCompletadas = append(resultado.EtapasCompletadas, "XML generado")
 	fmt.Printf("✅ XML generado: %d bytes\n", len(xmlData))
@@ -99,12 +99,12 @@ func TestIntegracionBasico(config ConfigTestSRI) *ResultadoTestIntegracion {
 	// Etapa 3: Generar clave de acceso
 	fmt.Println("\n3️⃣ GENERANDO CLAVE DE ACCESO")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	ambiente := Pruebas
 	if !config.UsarAmbientePruebas {
 		ambiente = Produccion
 	}
-	
+
 	claveConfig := ClaveAccesoConfig{
 		FechaEmision:     time.Now(),
 		TipoComprobante:  Factura,
@@ -117,11 +117,11 @@ func TestIntegracionBasico(config ConfigTestSRI) *ResultadoTestIntegracion {
 
 	claveAcceso, err := GenerarClaveAcceso(claveConfig)
 	if err != nil {
-		resultado.ErroresEncontrados = append(resultado.ErroresEncontrados, 
+		resultado.ErroresEncontrados = append(resultado.ErroresEncontrados,
 			fmt.Sprintf("Error generando clave de acceso: %v", err))
 		return resultado
 	}
-	
+
 	resultado.ClaveAccesoGenerada = claveAcceso
 	resultado.EtapasCompletadas = append(resultado.EtapasCompletadas, "Clave de acceso generada")
 	fmt.Printf("✅ Clave de acceso: %s\n", FormatearClaveAcceso(claveAcceso))
@@ -129,103 +129,103 @@ func TestIntegracionBasico(config ConfigTestSRI) *ResultadoTestIntegracion {
 	// Etapa 4: Validar XML localmente
 	fmt.Println("\n4️⃣ VALIDACIÓN LOCAL DE XML")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	// Verificar estructura básica
 	xmlString := string(xmlData)
 	if !strings.Contains(xmlString, "<factura>") {
-		resultado.ErroresEncontrados = append(resultado.ErroresEncontrados, 
+		resultado.ErroresEncontrados = append(resultado.ErroresEncontrados,
 			"XML no contiene elemento raíz <factura>")
 		return resultado
 	}
-	
+
 	if !strings.Contains(xmlString, claveAcceso) {
-		resultado.ErroresEncontrados = append(resultado.ErroresEncontrados, 
+		resultado.ErroresEncontrados = append(resultado.ErroresEncontrados,
 			"XML no contiene la clave de acceso generada")
 		return resultado
 	}
-	
+
 	resultado.EtapasCompletadas = append(resultado.EtapasCompletadas, "XML validado localmente")
 	fmt.Println("✅ XML validado localmente")
 
 	// Etapa 5: Preparar cliente SOAP
 	fmt.Println("\n5️⃣ PREPARANDO CLIENTE SOAP")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	client := NewSOAPClient(ambiente)
 	client.TimeoutSegundos = config.TimeoutSegundos
-	
+
 	resultado.EtapasCompletadas = append(resultado.EtapasCompletadas, "Cliente SOAP preparado")
 	fmt.Printf("✅ Cliente SOAP configurado para ambiente: %s\n", obtenerNombreAmbiente(ambiente))
 
 	// Etapa 6: Test de conectividad (opcional)
 	fmt.Println("\n6️⃣ TEST DE CONECTIVIDAD")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	// Simular test de conectividad
 	fmt.Println("🔍 Verificando acceso a endpoints SRI...")
-	
+
 	endpoint := EndpointRecepcionCertificacion
 	if ambiente == Produccion {
 		endpoint = EndpointRecepcionProduccion
 	}
-	
+
 	fmt.Printf("📡 Endpoint: %s\n", endpoint)
 	fmt.Println("✅ Endpoint accesible (simulado)")
-	
+
 	resultado.EtapasCompletadas = append(resultado.EtapasCompletadas, "Conectividad verificada")
 
 	// Etapa 7: Simulación de envío (si no hay certificado real)
 	if config.RutaCertificado == "" || !config.ValidarCertificado {
 		fmt.Println("\n7️⃣ SIMULACIÓN DE ENVÍO (SIN CERTIFICADO REAL)")
 		fmt.Println(strings.Repeat("-", 40))
-		
+
 		// Simular autorización
 		autorizacion := SimularAutorizacionSRI(claveAcceso, ambiente)
 		resultado.NumeroAutorizacion = autorizacion.NumeroAutorizacion
-		
+
 		fmt.Printf("🎭 Simulando envío a SRI...\n")
 		fmt.Printf("✅ Respuesta simulada: %s\n", autorizacion.Estado)
 		fmt.Printf("📝 Número de autorización: %s\n", autorizacion.NumeroAutorizacion)
-		
+
 		resultado.EtapasCompletadas = append(resultado.EtapasCompletadas, "Envío simulado exitoso")
 		resultado.Exitoso = true
 	} else {
 		// Etapa 7: Envío real al SRI (con certificado)
 		fmt.Println("\n7️⃣ ENVÍO REAL AL SRI")
 		fmt.Println(strings.Repeat("-", 40))
-		
+
 		fmt.Println("🚀 Iniciando comunicación real con SRI...")
-		
+
 		// Aquí iría la lógica real de envío con certificado
 		// Por ahora, marcamos como no implementado para certificado real
-		resultado.ErroresEncontrados = append(resultado.ErroresEncontrados, 
+		resultado.ErroresEncontrados = append(resultado.ErroresEncontrados,
 			"Envío real requiere certificado digital válido")
 		fmt.Println("⚠️  Envío real requiere certificado digital configurado")
 	}
 
 	resultado.TiempoTotal = time.Since(inicio)
-	
+
 	// Mostrar resumen
 	fmt.Println("\n" + strings.Repeat("=", 60))
 	fmt.Println("📊 RESUMEN DEL TEST DE INTEGRACIÓN")
 	fmt.Println(strings.Repeat("=", 60))
-	
+
 	if resultado.Exitoso {
 		fmt.Println("✅ RESULTADO: EXITOSO")
 	} else {
 		fmt.Println("❌ RESULTADO: CON ERRORES")
 	}
-	
+
 	fmt.Printf("⏱️  Tiempo total: %v\n", resultado.TiempoTotal)
 	fmt.Printf("📊 Etapas completadas: %d\n", len(resultado.EtapasCompletadas))
-	
+
 	if len(resultado.ErroresEncontrados) > 0 {
 		fmt.Printf("💥 Errores encontrados: %d\n", len(resultado.ErroresEncontrados))
 		for i, error := range resultado.ErroresEncontrados {
 			fmt.Printf("   %d. %s\n", i+1, error)
 		}
 	}
-	
+
 	fmt.Println("\n✅ Etapas completadas:")
 	for i, etapa := range resultado.EtapasCompletadas {
 		fmt.Printf("   %d. %s\n", i+1, etapa)
@@ -257,7 +257,7 @@ func TestConectividadSRI() {
 	for i, endpoint := range endpoints {
 		fmt.Printf("\n%d. %s (%s)\n", i+1, endpoint.nombre, endpoint.ambiente)
 		fmt.Printf("   🔗 URL: %s\n", endpoint.url)
-		
+
 		// Simular verificación de conectividad
 		fmt.Printf("   🔍 Verificando accesibilidad...\n")
 		time.Sleep(500 * time.Millisecond) // Simular tiempo de verificación
@@ -288,7 +288,7 @@ func TestValidacionCompleta() *ResultadoTestIntegracion {
 		if resultado.ClaveAccesoGenerada != "" {
 			err := ValidarClaveAcceso(resultado.ClaveAccesoGenerada)
 			if err != nil {
-				resultado.ErroresEncontrados = append(resultado.ErroresEncontrados, 
+				resultado.ErroresEncontrados = append(resultado.ErroresEncontrados,
 					fmt.Sprintf("Clave de acceso inválida: %v", err))
 				resultado.Exitoso = false
 			} else {
@@ -300,11 +300,11 @@ func TestValidacionCompleta() *ResultadoTestIntegracion {
 		if resultado.ClaveAccesoGenerada != "" {
 			config, err := ParsearClaveAcceso(resultado.ClaveAccesoGenerada)
 			if err != nil {
-				resultado.ErroresEncontrados = append(resultado.ErroresEncontrados, 
+				resultado.ErroresEncontrados = append(resultado.ErroresEncontrados,
 					fmt.Sprintf("Error parseando clave de acceso: %v", err))
 				resultado.Exitoso = false
 			} else {
-				fmt.Printf("✅ Clave parseada correctamente: %s\n", 
+				fmt.Printf("✅ Clave parseada correctamente: %s\n",
 					config.FechaEmision.Format("02/01/2006"))
 			}
 		}
@@ -312,11 +312,11 @@ func TestValidacionCompleta() *ResultadoTestIntegracion {
 		// Test de XML bien formado
 		if resultado.XMLGenerado != "" {
 			if strings.Contains(resultado.XMLGenerado, "<?xml") &&
-			   strings.Contains(resultado.XMLGenerado, "<factura>") &&
-			   strings.Contains(resultado.XMLGenerado, "</factura>") {
+				strings.Contains(resultado.XMLGenerado, "<factura>") &&
+				strings.Contains(resultado.XMLGenerado, "</factura>") {
 				fmt.Println("✅ XML bien formado")
 			} else {
-				resultado.ErroresEncontrados = append(resultado.ErroresEncontrados, 
+				resultado.ErroresEncontrados = append(resultado.ErroresEncontrados,
 					"XML mal formado")
 				resultado.Exitoso = false
 			}

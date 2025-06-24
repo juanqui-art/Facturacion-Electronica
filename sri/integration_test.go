@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"go-facturacion-sri/config"
 	"go-facturacion-sri/factory"
 	"go-facturacion-sri/models"
-	"go-facturacion-sri/config"
 )
 
 // TestGenerarClaveAcceso prueba la generación de claves de acceso
@@ -51,23 +51,23 @@ func TestGenerarClaveAcceso(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			clave, err := GenerarClaveAcceso(tt.config)
-			
+
 			if tt.valid {
 				if err != nil {
 					t.Errorf("GenerarClaveAcceso() error = %v, esperaba nil", err)
 					return
 				}
-				
+
 				// Validar longitud
 				if len(clave) != 49 {
 					t.Errorf("Clave debe tener 49 dígitos, obtuvo %d", len(clave))
 				}
-				
+
 				// Validar clave
 				if err := ValidarClaveAcceso(clave); err != nil {
 					t.Errorf("Clave generada no es válida: %v", err)
 				}
-				
+
 				t.Logf("Clave generada: %s", FormatearClaveAcceso(clave))
 			} else {
 				if err == nil {
@@ -186,12 +186,12 @@ func TestValidarClaveAccesoDigitoVerificador(t *testing.T) {
 		CodigoNumerico:   "12345678",
 		TipoEmision:      EmisionNormal,
 	}
-	
+
 	claveValida, err := GenerarClaveAcceso(config)
 	if err != nil {
 		t.Fatalf("Error generando clave válida: %v", err)
 	}
-	
+
 	// Crear clave inválida modificando el último dígito
 	claveInvalida := claveValida[:48] + "0"
 
@@ -212,11 +212,11 @@ func TestValidarClaveAccesoDigitoVerificador(t *testing.T) {
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("Test %d", i+1), func(t *testing.T) {
 			err := ValidarClaveAcceso(tt.clave)
-			
+
 			if tt.esperado && err != nil {
 				t.Errorf("ValidarClaveAcceso() error = %v, esperaba nil", err)
 			}
-			
+
 			if !tt.esperado && err == nil {
 				t.Errorf("ValidarClaveAcceso() esperaba error, obtuvo nil")
 			}
@@ -250,9 +250,9 @@ func BenchmarkGenerarClaveAcceso(b *testing.B) {
 func TestFormatearClaveAcceso(t *testing.T) {
 	clave := "2306202401179214673900110010010000000011234567891"
 	esperado := "23062024-01-1792146739001-1-001001-000000001-12345678-9-1"
-	
+
 	resultado := FormatearClaveAcceso(clave)
-	
+
 	if resultado != esperado {
 		t.Errorf("FormatearClaveAcceso() = %s, esperado %s", resultado, esperado)
 	}

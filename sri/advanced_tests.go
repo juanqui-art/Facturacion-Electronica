@@ -2,21 +2,21 @@ package sri
 
 import (
 	"fmt"
+	"go-facturacion-sri/factory"
+	"go-facturacion-sri/models"
 	"strings"
 	"testing"
 	"time"
-	"go-facturacion-sri/factory"
-	"go-facturacion-sri/models"
 )
 
 // TestErroresSOAPAvanzados tests avanzados de manejo de errores
 func TestErroresSOAPAvanzados(t *testing.T) {
 	tests := []struct {
-		name           string
-		mensajeError   string
-		codigoHTTP     int
-		esRecuperable  bool
-		tipoEsperado   TipoErrorSRI
+		name          string
+		mensajeError  string
+		codigoHTTP    int
+		esRecuperable bool
+		tipoEsperado  TipoErrorSRI
 	}{
 		{
 			name:          "Error de clave de acceso registrada",
@@ -51,15 +51,15 @@ func TestErroresSOAPAvanzados(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			errorSRI := ParsearErrorSRI(tt.mensajeError, tt.codigoHTTP)
-			
+
 			if errorSRI.Tipo != tt.tipoEsperado {
 				t.Errorf("Tipo de error esperado: %v, obtenido: %v", tt.tipoEsperado, errorSRI.Tipo)
 			}
-			
+
 			if errorSRI.Recuperable != tt.esRecuperable {
 				t.Errorf("Recuperabilidad esperada: %v, obtenida: %v", tt.esRecuperable, errorSRI.Recuperable)
 			}
-			
+
 			if errorSRI.SugerenciaFix == "" {
 				t.Error("Sugerencia de solución no puede estar vacía")
 			}
@@ -73,7 +73,7 @@ func TestReintentoLogic(t *testing.T) {
 	funcionSiempreFalla := func() error {
 		return CrearErrorConexion("Conexión falló")
 	}
-	
+
 	config := ConfigReintento{
 		MaxIntentos:      3,
 		TiempoBase:       10 * time.Millisecond,
@@ -82,17 +82,17 @@ func TestReintentoLogic(t *testing.T) {
 		JitterMaximo:     5 * time.Millisecond,
 		SoloRecuperables: true,
 	}
-	
+
 	resultado := EjecutarConReintento(funcionSiempreFalla, config)
-	
+
 	if resultado.Exitoso {
 		t.Error("El resultado debería ser fallido")
 	}
-	
+
 	if resultado.IntentosRealizados != 3 {
 		t.Errorf("Intentos esperados: 3, obtenidos: %d", resultado.IntentosRealizados)
 	}
-	
+
 	if len(resultado.Errores) != 3 {
 		t.Errorf("Errores esperados: 3, obtenidos: %d", len(resultado.Errores))
 	}
@@ -108,18 +108,18 @@ func TestReintentoExitoso(t *testing.T) {
 		}
 		return nil // Éxito en el tercer intento
 	}
-	
+
 	config := ConfigReintentoDefault
 	config.TiempoBase = 10 * time.Millisecond
 	config.TiempoMaximo = 50 * time.Millisecond
 	config.JitterMaximo = 5 * time.Millisecond
-	
+
 	resultado := EjecutarConReintento(funcionEventualmenteExitosa, config)
-	
+
 	if !resultado.Exitoso {
 		t.Error("El resultado debería ser exitoso")
 	}
-	
+
 	if resultado.IntentosRealizados != 3 {
 		t.Errorf("Intentos esperados: 3, obtenidos: %d", resultado.IntentosRealizados)
 	}
@@ -176,7 +176,7 @@ func TestIntegracionFacturaCompleta(t *testing.T) {
 
 	// Crear cliente SOAP
 	client := NewSOAPClient(Pruebas)
-	
+
 	// Test de estructura (sin envío real)
 	if client == nil {
 		t.Fatal("Cliente SOAP no fue creado")
@@ -201,28 +201,28 @@ func TestIntegracionFacturaCompleta(t *testing.T) {
 // TestValidacionesExtendidas tests de validaciones extendidas
 func TestValidacionesExtendidas(t *testing.T) {
 	tests := []struct {
-		name         string
-		claveAcceso  string
+		name          string
+		claveAcceso   string
 		debeSerValida bool
 	}{
 		{
-			name:         "Clave válida generada",
-			claveAcceso:  "",
+			name:          "Clave válida generada",
+			claveAcceso:   "",
 			debeSerValida: true,
 		},
 		{
-			name:         "Clave muy corta",
-			claveAcceso:  "123456789012345678901234567890123456789012345678", // 48 dígitos
+			name:          "Clave muy corta",
+			claveAcceso:   "123456789012345678901234567890123456789012345678", // 48 dígitos
 			debeSerValida: false,
 		},
 		{
-			name:         "Clave muy larga",
-			claveAcceso:  "12345678901234567890123456789012345678901234567890", // 50 dígitos
+			name:          "Clave muy larga",
+			claveAcceso:   "12345678901234567890123456789012345678901234567890", // 50 dígitos
 			debeSerValida: false,
 		},
 		{
-			name:         "Clave con caracteres no numéricos",
-			claveAcceso:  "1234567890123456789012345678901234567890123456789A",
+			name:          "Clave con caracteres no numéricos",
+			claveAcceso:   "1234567890123456789012345678901234567890123456789A",
 			debeSerValida: false,
 		},
 	}
@@ -230,7 +230,7 @@ func TestValidacionesExtendidas(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			claveAcceso := tt.claveAcceso
-			
+
 			// Si no se proporciona clave, generar una válida
 			if claveAcceso == "" {
 				config := ClaveAccesoConfig{
@@ -242,20 +242,20 @@ func TestValidacionesExtendidas(t *testing.T) {
 					NumeroSecuencial: "000000001",
 					TipoEmision:      EmisionNormal,
 				}
-				
+
 				var err error
 				claveAcceso, err = GenerarClaveAcceso(config)
 				if err != nil {
 					t.Fatalf("Error generando clave de acceso: %v", err)
 				}
 			}
-			
+
 			err := ValidarClaveAcceso(claveAcceso)
-			
+
 			if tt.debeSerValida && err != nil {
 				t.Errorf("Clave debería ser válida pero falló: %v", err)
 			}
-			
+
 			if !tt.debeSerValida && err == nil {
 				t.Errorf("Clave debería ser inválida pero pasó la validación")
 			}
@@ -279,15 +279,15 @@ func TestConfiguracionesReintento(t *testing.T) {
 			if tc.config.MaxIntentos <= 0 {
 				t.Error("MaxIntentos debe ser positivo")
 			}
-			
+
 			if tc.config.TiempoBase <= 0 {
 				t.Error("TiempoBase debe ser positivo")
 			}
-			
+
 			if tc.config.Multiplicador <= 1.0 {
 				t.Error("Multiplicador debe ser mayor a 1.0")
 			}
-			
+
 			if tc.config.TiempoMaximo <= tc.config.TiempoBase {
 				t.Error("TiempoMaximo debe ser mayor a TiempoBase")
 			}
@@ -308,7 +308,7 @@ func BenchmarkGeneracionClaveAcceso(b *testing.B) {
 	}
 
 	b.ResetTimer()
-	
+
 	for i := 0; i < b.N; i++ {
 		_, err := GenerarClaveAcceso(config)
 		if err != nil {
@@ -336,7 +336,7 @@ func BenchmarkValidacionClaveAcceso(b *testing.B) {
 	}
 
 	b.ResetTimer()
-	
+
 	for i := 0; i < b.N; i++ {
 		err := ValidarClaveAcceso(claveAcceso)
 		if err != nil {
@@ -348,7 +348,7 @@ func BenchmarkValidacionClaveAcceso(b *testing.B) {
 // TestCreacionMultiplesFacturas test de creación de múltiples facturas
 func TestCreacionMultiplesFacturas(t *testing.T) {
 	numFacturas := 10
-	
+
 	for i := 0; i < numFacturas; i++ {
 		facturaData := models.FacturaInput{
 			ClienteNombre: fmt.Sprintf("CLIENTE TEST %d", i+1),
@@ -370,12 +370,12 @@ func TestCreacionMultiplesFacturas(t *testing.T) {
 
 		// Verificar que cada factura tiene datos únicos
 		expectedTotal := (100.00 + float64(i*10)) * float64(i+1) * 1.15 // Con IVA
-		if abs(factura.InfoFactura.ImporteTotal - expectedTotal) > 0.01 {
-			t.Errorf("Total de factura %d incorrecto: esperado %.2f, obtenido %.2f", 
+		if abs(factura.InfoFactura.ImporteTotal-expectedTotal) > 0.01 {
+			t.Errorf("Total de factura %d incorrecto: esperado %.2f, obtenido %.2f",
 				i+1, expectedTotal, factura.InfoFactura.ImporteTotal)
 		}
 	}
-	
+
 	t.Logf("✅ Creadas %d facturas exitosamente", numFacturas)
 }
 

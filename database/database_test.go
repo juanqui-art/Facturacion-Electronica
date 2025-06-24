@@ -1,12 +1,12 @@
 package database
 
 import (
-	"os"
-	"testing"
-	"time"
 	"go-facturacion-sri/factory"
 	"go-facturacion-sri/models"
 	"go-facturacion-sri/sri"
+	"os"
+	"testing"
+	"time"
 )
 
 func TestNew(t *testing.T) {
@@ -96,7 +96,7 @@ func TestGuardarYObtenerFactura(t *testing.T) {
 	}
 
 	if facturaObtenida.ClienteNombre != facturaData.ClienteNombre {
-		t.Errorf("Nombre de cliente esperado: %s, obtenido: %s", 
+		t.Errorf("Nombre de cliente esperado: %s, obtenido: %s",
 			facturaData.ClienteNombre, facturaObtenida.ClienteNombre)
 	}
 
@@ -107,7 +107,7 @@ func TestGuardarYObtenerFactura(t *testing.T) {
 	}
 
 	if facturaPorNumero.ID != facturaDB.ID {
-		t.Errorf("IDs no coinciden: esperado %d, obtenido %d", 
+		t.Errorf("IDs no coinciden: esperado %d, obtenido %d",
 			facturaDB.ID, facturaPorNumero.ID)
 	}
 }
@@ -256,7 +256,7 @@ func TestActualizarEstadoFactura(t *testing.T) {
 	}
 
 	if facturaActualizada.NumeroAutorizacion != numeroAutorizacion {
-		t.Errorf("Número de autorización esperado: %s, obtenido: %s", 
+		t.Errorf("Número de autorización esperado: %s, obtenido: %s",
 			numeroAutorizacion, facturaActualizada.NumeroAutorizacion)
 	}
 
@@ -388,7 +388,7 @@ func TestGuardarYObtenerCliente(t *testing.T) {
 	}
 
 	if clientePorID.Nombre != cliente.Nombre {
-		t.Errorf("Nombre de cliente esperado: %s, obtenido: %s", 
+		t.Errorf("Nombre de cliente esperado: %s, obtenido: %s",
 			cliente.Nombre, clientePorID.Nombre)
 	}
 
@@ -399,7 +399,7 @@ func TestGuardarYObtenerCliente(t *testing.T) {
 	}
 
 	if clientePorCedula.ID != clienteGuardado.ID {
-		t.Errorf("IDs no coinciden: esperado %d, obtenido %d", 
+		t.Errorf("IDs no coinciden: esperado %d, obtenido %d",
 			clienteGuardado.ID, clientePorCedula.ID)
 	}
 }
@@ -417,7 +417,7 @@ func TestEstadisticasFacturas(t *testing.T) {
 
 	// Crear facturas de prueba con diferentes estados
 	estados := []string{"BORRADOR", "AUTORIZADA", "AUTORIZADA"}
-	
+
 	for i, estado := range estados {
 		facturaData := models.FacturaInput{
 			ClienteNombre: "CLIENTE ESTADISTICAS " + string(rune(i+49)),
@@ -520,7 +520,7 @@ func BenchmarkGuardarFactura(b *testing.B) {
 	}
 
 	b.ResetTimer()
-	
+
 	for i := 0; i < b.N; i++ {
 		factura, err := factory.CrearFactura(facturaData)
 		if err != nil {

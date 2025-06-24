@@ -3,10 +3,10 @@ package sri
 
 import (
 	"fmt"
-	"strings"
-	"time"
 	"go-facturacion-sri/factory"
 	"go-facturacion-sri/models"
+	"strings"
+	"time"
 )
 
 // DemoSOAPClient demuestra el uso del cliente SOAP
@@ -18,7 +18,7 @@ func DemoSOAPClient() {
 	// Demo 1: Crear cliente SOAP
 	fmt.Println("\n1️⃣ CREACIÓN DE CLIENTE SOAP")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	client := NewSOAPClient(Pruebas)
 	fmt.Printf("✅ Cliente SOAP creado para ambiente: %s\n", obtenerNombreAmbiente(client.Ambiente))
 	fmt.Printf("⏱️  Timeout configurado: %d segundos\n", client.TimeoutSegundos)
@@ -34,7 +34,7 @@ func DemoSOAPClient() {
 	// Demo 3: Crear factura de ejemplo para envío
 	fmt.Println("\n3️⃣ GENERACIÓN DE FACTURA PARA ENVÍO")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	facturaData := models.FacturaInput{
 		ClienteNombre: "EMPRESA DEMO SRI",
 		ClienteCedula: "1713175071",
@@ -66,7 +66,7 @@ func DemoSOAPClient() {
 	// Demo 4: Generar clave de acceso
 	fmt.Println("\n4️⃣ GENERACIÓN DE CLAVE DE ACCESO")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	claveConfig := ClaveAccesoConfig{
 		FechaEmision:     time.Now(),
 		TipoComprobante:  Factura,
@@ -110,24 +110,24 @@ func DemoSOAPClient() {
 	// Demo 7: Flujo completo teórico
 	fmt.Println("\n7️⃣ FLUJO COMPLETO TEÓRICO")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	fmt.Println("🔄 Simulando flujo completo...")
-	
+
 	// Simular envío
 	fmt.Println("📤 1. Enviando comprobante al SRI... ⏳")
 	time.Sleep(1 * time.Second)
 	fmt.Println("✅    Comprobante RECIBIDO por SRI")
-	
+
 	// Simular procesamiento
 	fmt.Println("⚙️  2. SRI procesando comprobante... ⏳")
 	time.Sleep(2 * time.Second)
 	fmt.Println("✅    Comprobante PROCESADO")
-	
+
 	// Simular autorización
 	fmt.Println("🔐 3. Consultando autorización... ⏳")
 	time.Sleep(1 * time.Second)
 	fmt.Println("✅    Comprobante AUTORIZADO")
-	
+
 	// Resultado final
 	fmt.Println("\n🎉 RESULTADO FINAL (SIMULADO)")
 	fmt.Println(strings.Repeat("-", 40))
@@ -161,7 +161,7 @@ func DemoSOAPOperaciones() {
 	fmt.Println("📡 Endpoint: RecepcionComprobantesOffline")
 	fmt.Println("📄 Input: XML del comprobante en Base64")
 	fmt.Println("📄 Output: RespuestaSolicitud con estado")
-	
+
 	fmt.Println("\n🔧 Estructura de la petición SOAP:")
 	fmt.Println(`
 	<soap:Envelope xmlns:soap="...">
@@ -179,7 +179,7 @@ func DemoSOAPOperaciones() {
 	fmt.Println("📡 Endpoint: AutorizacionComprobantesOffline")
 	fmt.Println("📄 Input: Clave de acceso (49 dígitos)")
 	fmt.Println("📄 Output: RespuestaComprobante con autorización")
-	
+
 	fmt.Println("\n🔧 Estructura de la petición SOAP:")
 	fmt.Println(`
 	<soap:Envelope xmlns:soap="...">

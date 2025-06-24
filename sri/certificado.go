@@ -6,25 +6,25 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
-	"time"
 	"software.sslmate.com/src/go-pkcs12"
+	"time"
 )
 
 // CertificadoDigital representa un certificado digital PKCS#12 para firma electrónica
 type CertificadoDigital struct {
-	Archivo    string           // Ruta al archivo .p12
-	Password   string           // Contraseña del certificado
-	PrivateKey interface{}      // Clave privada extraída
-	Cert       *x509.Certificate // Certificado X.509
+	Archivo    string              // Ruta al archivo .p12
+	Password   string              // Contraseña del certificado
+	PrivateKey interface{}         // Clave privada extraída
+	Cert       *x509.Certificate   // Certificado X.509
 	CACerts    []*x509.Certificate // Certificados de la CA
 }
 
 // CertificadoConfig configuración para certificados digitales
 type CertificadoConfig struct {
-	RutaArchivo      string `json:"rutaArchivo"`
-	Password         string `json:"password"`
-	ValidarVigencia  bool   `json:"validarVigencia"`
-	ValidarCadena    bool   `json:"validarCadena"`
+	RutaArchivo     string `json:"rutaArchivo"`
+	Password        string `json:"password"`
+	ValidarVigencia bool   `json:"validarVigencia"`
+	ValidarCadena   bool   `json:"validarCadena"`
 }
 
 // CargarCertificado carga un certificado PKCS#12 desde archivo
@@ -130,7 +130,7 @@ func (cd *CertificadoDigital) MostrarInformacion() {
 	fmt.Printf("📅 Válido hasta: %v\n", cd.Cert.NotAfter)
 	fmt.Printf("🔧 Algoritmo: %v\n", cd.Cert.SignatureAlgorithm)
 	fmt.Printf("📁 Archivo: %s\n", cd.Archivo)
-	
+
 	if len(cd.CACerts) > 0 {
 		fmt.Printf("\n🔗 Certificados de CA en cadena: %d\n", len(cd.CACerts))
 		for i, caCert := range cd.CACerts {
