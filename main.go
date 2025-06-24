@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	
+
 	"go-facturacion-sri/api"
 	"go-facturacion-sri/config"
 	"go-facturacion-sri/database"
@@ -25,19 +25,19 @@ func main() {
 		fmt.Printf("✅ Configuración cargada: %s\n", config.Config.Empresa.RazonSocial)
 		fmt.Printf("🏢 Ambiente: %s\n", config.Config.Ambiente.Descripcion)
 	}
-	
+
 	// Verificar si queremos ejecutar en modo API, SRI demo o modo demo
 	if len(os.Args) > 1 && os.Args[1] == "api" {
 		// Modo API: Iniciar servidor HTTP
 		fmt.Println("\n" + strings.Repeat("=", 50))
 		fmt.Println("🌐 INICIANDO SERVIDOR HTTP API")
 		fmt.Println(strings.Repeat("=", 50))
-		
+
 		port := "8080"
 		if len(os.Args) > 2 {
 			port = os.Args[2]
 		}
-		
+
 		server := api.NewServer(port)
 		if err := server.Start(); err != nil {
 			fmt.Printf("❌ Error iniciando servidor: %v\n", err)
@@ -45,37 +45,37 @@ func main() {
 		}
 		return
 	}
-	
+
 	// Modo SRI Demo: Demostrar funcionalidades de integración SRI
 	if len(os.Args) > 1 && os.Args[1] == "sri" {
 		sri.DemoSRI()
 		return
 	}
-	
+
 	// Modo SOAP Demo: Demostrar cliente SOAP
 	if len(os.Args) > 1 && os.Args[1] == "soap" {
 		sri.DemoSOAPClient()
 		return
 	}
-	
+
 	// Modo Database Demo: Demostrar sistema de base de datos
 	if len(os.Args) > 1 && os.Args[1] == "database" {
 		database.DemoDatabase()
 		return
 	}
-	
+
 	// Modo Test SRI: Tests de integración con SRI real
 	if len(os.Args) > 1 && os.Args[1] == "test-sri" {
 		sri.DemoTestIntegracion()
 		return
 	}
-	
+
 	// Modo Certificación: Guía de certificación SRI
 	if len(os.Args) > 1 && os.Args[1] == "certificacion" {
 		sri.MostrarGuiaCertificacion()
 		return
 	}
-	
+
 	// Modo demo: Ejecutar ejemplos y pruebas
 	fmt.Println("\n" + strings.Repeat("=", 50))
 	fmt.Println("🧪 MODO DEMO - Ejecutando ejemplos")
@@ -86,14 +86,14 @@ func main() {
 	fmt.Println("🧪 Para test SRI: go run main.go test_validaciones.go test-sri")
 	fmt.Println("📋 Para certificación: go run main.go test_validaciones.go certificacion")
 	fmt.Println(strings.Repeat("=", 50))
-	
+
 	// Primero, ejecutar pruebas de validación
 	probarValidaciones()
-	
+
 	fmt.Println("\n" + strings.Repeat("=", 50))
 	fmt.Println("🚀 GENERANDO FACTURA PRINCIPAL")
 	fmt.Println(strings.Repeat("=", 50))
-	
+
 	// Crear datos de factura - ¡Ahora con múltiples productos!
 	facturaData := models.FacturaInput{
 		ClienteNombre: "JUAN CARLOS PEREZ",
@@ -119,17 +119,17 @@ func main() {
 			},
 		},
 	}
-	
+
 	// Generar factura usando nuestra función factory
 	factura, err := factory.CrearFactura(facturaData)
 	if err != nil {
 		fmt.Printf("Error al crear la factura: %v\n", err)
 		return
 	}
-	
+
 	// Mostrar resumen usando el método de la factura
 	factura.MostrarResumen()
-	
+
 	// Generar XML usando el método de la factura
 	xmlData, err := factura.GenerarXML()
 	if err != nil {
