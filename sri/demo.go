@@ -1,4 +1,4 @@
-// Demo del sistema de integración SRI
+// Package sri Demo del sistema de integración SRI
 package sri
 
 import (
@@ -16,7 +16,7 @@ func DemoSRI() {
 	// Demo 1: Generar clave de acceso
 	fmt.Println("\n1️⃣ GENERACIÓN DE CLAVE DE ACCESO")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	config := ClaveAccesoConfig{
 		FechaEmision:     time.Now(),
 		TipoComprobante:  Factura,
@@ -34,14 +34,14 @@ func DemoSRI() {
 	}
 
 	fmt.Printf("✅ Clave de acceso generada: %s\n", FormatearClaveAcceso(claveAcceso))
-	
+
 	// Mostrar información detallada
 	MostrarInformacionClaveAcceso(claveAcceso)
 
 	// Demo 2: Simular autorización SRI
 	fmt.Println("\n2️⃣ SIMULACIÓN AUTORIZACIÓN SRI")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	autorizacion := SimularAutorizacionSRI(claveAcceso, Pruebas)
 	fmt.Printf("📝 Número de Autorización: %s\n", autorizacion.NumeroAutorizacion)
 	fmt.Printf("📅 Fecha de Autorización: %s\n", autorizacion.FechaAutorizacion.Format("02/01/2006 15:04:05"))
@@ -56,7 +56,7 @@ func DemoSRI() {
 	fmt.Println("   • Contraseña del certificado")
 	fmt.Println("   • Validación de vigencia")
 	fmt.Println("   • Implementación XAdES-BES")
-	
+
 	// Ejemplo de configuración de certificado
 	certConfig := CertificadoConfig{
 		RutaArchivo:     "/ruta/al/certificado.p12",
@@ -64,7 +64,7 @@ func DemoSRI() {
 		ValidarVigencia: true,
 		ValidarCadena:   true,
 	}
-	
+
 	fmt.Printf("\n📂 Configuración de certificado ejemplo:\n")
 	fmt.Printf("   Archivo: %s\n", certConfig.RutaArchivo)
 	fmt.Printf("   Validar vigencia: %v\n", certConfig.ValidarVigencia)
@@ -73,7 +73,7 @@ func DemoSRI() {
 	// Demo 4: Tipos de comprobantes soportados
 	fmt.Println("\n4️⃣ TIPOS DE COMPROBANTES SOPORTADOS")
 	fmt.Println(strings.Repeat("-", 40))
-	
+
 	tiposComprobantes := []struct {
 		tipo   TipoComprobante
 		nombre string
@@ -102,7 +102,7 @@ func DemoSRI() {
 	fmt.Println("🌐 Endpoints disponibles:")
 	fmt.Printf("   Certificación: %s\n", EndpointRecepcionCertificacion)
 	fmt.Printf("   Producción: %s\n", EndpointRecepcionProduccion)
-	
+
 	fmt.Println("\n📡 Servicios SOAP implementados:")
 	fmt.Println("   • Recepción de comprobantes")
 	fmt.Println("   • Autorización de comprobantes")
@@ -187,7 +187,7 @@ func DemoValidacionClaves() {
 	for i, ejemplo := range claves {
 		fmt.Printf("\n%d. %s\n", i+1, ejemplo.descripcion)
 		fmt.Printf("   Clave: %s\n", ejemplo.clave)
-		
+
 		err := ValidarClaveAcceso(ejemplo.clave)
 		if err != nil {
 			fmt.Printf("   ❌ Resultado: %v\n", err)

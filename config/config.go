@@ -23,5 +23,5 @@ type FacturacionConfig struct {
 	Ambiente AmbienteConfig `json:"ambiente"`
 }
 
-// Global configuration instance
+// Config Global configuration instance
 var Config FacturacionConfig

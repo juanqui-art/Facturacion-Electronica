@@ -1,4 +1,4 @@
-// Handlers adicionales para base de datos en la API
+// Package api Handlers adicionales para base de datos en la API
 package api
 
 import (
@@ -72,13 +72,13 @@ func (s *Server) CrearFacturaConDB(w http.ResponseWriter, r *http.Request) {
 		"success": true,
 		"message": "Factura creada y guardada exitosamente",
 		"data": map[string]interface{}{
-			"id":              facturaDB.ID,
-			"numero_factura":  facturaDB.NumeroFactura,
-			"clave_acceso":    facturaDB.ClaveAcceso,
-			"cliente_nombre":  facturaDB.ClienteNombre,
-			"total":           facturaDB.Total,
-			"estado":          facturaDB.Estado,
-			"fecha_creacion":  facturaDB.FechaCreacion.Format(time.RFC3339),
+			"id":             facturaDB.ID,
+			"numero_factura": facturaDB.NumeroFactura,
+			"clave_acceso":   facturaDB.ClaveAcceso,
+			"cliente_nombre": facturaDB.ClienteNombre,
+			"total":          facturaDB.Total,
+			"estado":         facturaDB.Estado,
+			"fecha_creacion": facturaDB.FechaCreacion.Format(time.RFC3339),
 		},
 	}
 
@@ -223,7 +223,7 @@ func (s *Server) ActualizarEstadoFacturaDB(w http.ResponseWriter, r *http.Reques
 	// Obtener ID de la URL
 	idStr := r.URL.Path[len("/api/facturas/db/"):]
 	idStr = idStr[:len(idStr)-len("/estado")] // Remover "/estado" del final
-	
+
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		http.Error(w, "ID de factura inválido", http.StatusBadRequest)
@@ -232,10 +232,10 @@ func (s *Server) ActualizarEstadoFacturaDB(w http.ResponseWriter, r *http.Reques
 
 	// Parsear input JSON
 	var input struct {
-		Estado              string `json:"estado"`
-		NumeroAutorizacion  string `json:"numero_autorizacion"`
-		XMLAutorizado       string `json:"xml_autorizado"`
-		ObservacionesSRI    string `json:"observaciones_sri"`
+		Estado             string `json:"estado"`
+		NumeroAutorizacion string `json:"numero_autorizacion"`
+		XMLAutorizado      string `json:"xml_autorizado"`
+		ObservacionesSRI   string `json:"observaciones_sri"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
