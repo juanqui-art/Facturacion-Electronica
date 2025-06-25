@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	
+	"go-facturacion-sri/config"
 )
 
 // Endpoints oficiales del SRI Ecuador
@@ -114,25 +116,36 @@ type AutorizarComprobante struct {
 	ClaveAcceso string   `xml:"claveAccesoComprobante"`
 }
 
-// NewSOAPClient crea un nuevo cliente SOAP para SRI con circuit breaker
+// NewSOAPClient crea un nuevo cliente SOAP para SRI con circuit breaker y configuración
 func NewSOAPClient(ambiente Ambiente) *SOAPClient {
+	// Obtener timeout desde configuración
+	timeout := time.Duration(config.Config.SRI.TimeoutSegundos) * time.Second
+	
 	// Configurar cliente HTTP con timeout y TLS
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: false, // En producción debe ser false
+			InsecureSkipVerify: ambiente == Pruebas, // Solo en pruebas
 		},
 	}
 
 	client := &http.Client{
 		Transport: tr,
-		Timeout:   30 * time.Second,
+		Timeout:   timeout,
+	}
+
+	// Configurar circuit breaker según ambiente
+	var circuitConfig ConfigCircuitBreaker
+	if ambiente == Produccion {
+		circuitConfig = ConfigCircuitBreakerConservador
+	} else {
+		circuitConfig = ConfigCircuitBreakerDefault
 	}
 
 	return &SOAPClient{
 		Ambiente:        ambiente,
-		TimeoutSegundos: 30,
+		TimeoutSegundos: config.Config.SRI.TimeoutSegundos,
 		httpClient:      client,
-		circuitBreaker:  NuevoCircuitBreakerDefault(),
+		circuitBreaker:  NuevoCircuitBreaker(circuitConfig),
 	}
 }
 
@@ -177,10 +190,15 @@ func (c *SOAPClient) enviarComprobanteInterno(xmlComprobante []byte) (*Respuesta
 	// Agregar header XML
 	soapRequest := []byte(`<?xml version="1.0" encoding="UTF-8"?>` + "\n" + string(soapXML))
 
-	// Determinar endpoint según ambiente
-	endpoint := EndpointRecepcionCertificacion
-	if c.Ambiente == Produccion {
-		endpoint = EndpointRecepcionProduccion
+	// Determinar endpoint desde configuración
+	endpoint := config.Config.SRI.EndpointRecepcion
+	if endpoint == "" {
+		// Fallback a constantes si no está configurado
+		if c.Ambiente == Produccion {
+			endpoint = EndpointRecepcionProduccion
+		} else {
+			endpoint = EndpointRecepcionCertificacion
+		}
 	}
 
 	// Crear petición HTTP
@@ -254,10 +272,15 @@ func (c *SOAPClient) consultarAutorizacionInterno(claveAcceso string) (*Respuest
 	// Agregar header XML
 	soapRequest := []byte(`<?xml version="1.0" encoding="UTF-8"?>` + "\n" + string(soapXML))
 
-	// Determinar endpoint según ambiente
-	endpoint := EndpointAutorizacionCertificacion
-	if c.Ambiente == Produccion {
-		endpoint = EndpointAutorizacionProduccion
+	// Determinar endpoint desde configuración
+	endpoint := config.Config.SRI.EndpointAutorizacion
+	if endpoint == "" {
+		// Fallback a constantes si no está configurado
+		if c.Ambiente == Produccion {
+			endpoint = EndpointAutorizacionProduccion
+		} else {
+			endpoint = EndpointAutorizacionCertificacion
+		}
 	}
 
 	// Crear petición HTTP
