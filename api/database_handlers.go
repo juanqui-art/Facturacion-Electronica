@@ -386,3 +386,227 @@ func (s *Server) BuscarClienteDB(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
+// ConsultarEstadoSRI consulta el estado de una factura en el SRI
+func (s *Server) ConsultarEstadoSRI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Obtener clave de acceso de query parameters
+	claveAcceso := r.URL.Query().Get("clave")
+	if claveAcceso == "" {
+		http.Error(w, "Clave de acceso requerida", http.StatusBadRequest)
+		return
+	}
+
+	// Crear cliente SRI
+	sriClient := sri.NewSOAPClient(sri.Pruebas)
+
+	// Consultar autorización
+	respuesta, err := sriClient.ConsultarAutorizacion(claveAcceso)
+	if err != nil {
+		// Respuesta con error, pero no falla el endpoint
+		response := map[string]interface{}{
+			"success":      false,
+			"clave_acceso": claveAcceso,
+			"error":        err.Error(),
+			"estado":       "ERROR",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	// Respuesta exitosa
+	response := map[string]interface{}{
+		"success":      true,
+		"clave_acceso": claveAcceso,
+		"data":         respuesta,
+	}
+
+	if len(respuesta.Autorizaciones) > 0 {
+		auth := respuesta.Autorizaciones[0]
+		response["estado"] = auth.Estado
+		response["numero_autorizacion"] = auth.NumeroAutorizacion
+		response["fecha_autorizacion"] = auth.FechaAutorizacion
+		
+		if len(auth.Mensajes) > 0 {
+			response["mensajes"] = auth.Mensajes
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// ObtenerAuditoriaDB obtiene registros de auditoría
+func (s *Server) ObtenerAuditoriaDB(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parámetros de consulta
+	tabla := r.URL.Query().Get("tabla")
+	registroIDStr := r.URL.Query().Get("registro_id")
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	limit := 50 // Por defecto
+	offset := 0 // Por defecto
+
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	if offsetStr != "" {
+		if o, err := strconv.Atoi(offsetStr); err == nil && o >= 0 {
+			offset = o
+		}
+	}
+
+	// Conectar a base de datos
+	db, err := database.New("database/facturacion.db")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error conectando a base de datos: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	var registros []*database.AuditLogDB
+
+	// Determinar tipo de consulta
+	if registroIDStr != "" && tabla != "" {
+		// Consulta específica por tabla y registro
+		registroID, err := strconv.Atoi(registroIDStr)
+		if err != nil {
+			http.Error(w, "ID de registro inválido", http.StatusBadRequest)
+			return
+		}
+		
+		registros, err = db.ObtenerAuditoriaPorRegistro(tabla, registroID)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error obteniendo auditoría: %v", err), http.StatusInternalServerError)
+			return
+		}
+	} else if tabla != "" {
+		// Consulta por tabla
+		registros, err = db.ObtenerAuditoriaPorTabla(tabla, limit, offset)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error obteniendo auditoría: %v", err), http.StatusInternalServerError)
+			return
+		}
+	} else {
+		http.Error(w, "Parámetro 'tabla' requerido", http.StatusBadRequest)
+		return
+	}
+
+	// Respuesta
+	response := map[string]interface{}{
+		"success": true,
+		"data": map[string]interface{}{
+			"registros": registros,
+			"count":     len(registros),
+			"limit":     limit,
+			"offset":    offset,
+			"tabla":     tabla,
+		},
+	}
+
+	if registroIDStr != "" {
+		response["data"].(map[string]interface{})["registro_id"] = registroIDStr
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// CrearRespaldoDB crea un respaldo manual de la base de datos
+func (s *Server) CrearRespaldoDB(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parsear input JSON (opcional)
+	var input struct {
+		Sufijo string `json:"sufijo"`
+	}
+	
+	// Es opcional, por defecto usará timestamp
+	json.NewDecoder(r.Body).Decode(&input)
+	
+	if input.Sufijo == "" {
+		input.Sufijo = "api_request"
+	}
+
+	// Conectar a base de datos
+	db, err := database.New("database/facturacion.db")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error conectando a base de datos: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Crear gestor de respaldos
+	backupManager := database.NewBackupManagerDefault(db)
+
+	// Crear respaldo manual
+	err = backupManager.CrearRespaldoManual(input.Sufijo)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error creando respaldo: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Respuesta
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Respaldo creado exitosamente",
+		"sufijo":  input.Sufijo,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// ListarRespaldosDB lista todos los respaldos disponibles
+func (s *Server) ListarRespaldosDB(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Conectar a base de datos
+	db, err := database.New("database/facturacion.db")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error conectando a base de datos: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Crear gestor de respaldos
+	backupManager := database.NewBackupManagerDefault(db)
+
+	// Listar respaldos
+	respaldos, err := backupManager.ListarRespaldos()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error listando respaldos: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Respuesta
+	response := map[string]interface{}{
+		"success": true,
+		"data": map[string]interface{}{
+			"respaldos": respaldos,
+			"count":     len(respaldos),
+		},
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}

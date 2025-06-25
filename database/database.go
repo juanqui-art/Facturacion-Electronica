@@ -82,6 +82,20 @@ type ConfigDB struct {
 	Activo bool   `json:"activo"`
 }
 
+// AuditLogDB estructura para registro de auditoría
+type AuditLogDB struct {
+	ID          int       `json:"id"`
+	Tabla       string    `json:"tabla"`       // facturas, clientes, productos
+	RegistroID  int       `json:"registroId"`  // ID del registro afectado
+	Operacion   string    `json:"operacion"`   // CREATE, UPDATE, DELETE
+	Usuario     string    `json:"usuario"`     // Usuario que realizó la acción
+	DatosAntes  string    `json:"datosAntes"`  // JSON con datos antes del cambio
+	DatosDespues string   `json:"datosDespues"` // JSON con datos después del cambio
+	IPAddress   string    `json:"ipAddress"`   // IP del usuario
+	UserAgent   string    `json:"userAgent"`   // User agent del cliente
+	Timestamp   time.Time `json:"timestamp"`   // Momento de la operación
+}
+
 // New crea una nueva instancia de base de datos
 func New(dbPath string) (*Database, error) {
 	// Crear directorio si no existe
@@ -191,6 +205,21 @@ func (d *Database) createTables() error {
 		activo BOOLEAN NOT NULL DEFAULT 1
 	);`
 
+	// Tabla de auditoría
+	auditSQL := `
+	CREATE TABLE IF NOT EXISTS audit_log (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		tabla TEXT NOT NULL,
+		registro_id INTEGER NOT NULL,
+		operacion TEXT NOT NULL,
+		usuario TEXT NOT NULL DEFAULT 'sistema',
+		datos_antes TEXT,
+		datos_despues TEXT,
+		ip_address TEXT,
+		user_agent TEXT,
+		timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+	);`
+
 	// Índices para mejorar performance
 	indicesSQL := []string{
 		"CREATE INDEX IF NOT EXISTS idx_facturas_numero ON facturas(numero_factura);",
@@ -200,10 +229,14 @@ func (d *Database) createTables() error {
 		"CREATE INDEX IF NOT EXISTS idx_facturas_estado ON facturas(estado);",
 		"CREATE INDEX IF NOT EXISTS idx_productos_factura ON productos(factura_id);",
 		"CREATE INDEX IF NOT EXISTS idx_clientes_cedula ON clientes(cedula);",
+		"CREATE INDEX IF NOT EXISTS idx_audit_tabla ON audit_log(tabla);",
+		"CREATE INDEX IF NOT EXISTS idx_audit_registro ON audit_log(registro_id);",
+		"CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_log(timestamp);",
+		"CREATE INDEX IF NOT EXISTS idx_audit_usuario ON audit_log(usuario);",
 	}
 
 	// Ejecutar creación de tablas
-	tables := []string{facturaSQL, productoSQL, clienteSQL, configSQL}
+	tables := []string{facturaSQL, productoSQL, clienteSQL, configSQL, auditSQL}
 	for _, table := range tables {
 		if _, err := d.db.Exec(table); err != nil {
 			return fmt.Errorf("error creando tabla: %v", err)
@@ -674,4 +707,118 @@ func (d *Database) EstadisticasFacturas() (map[string]interface{}, error) {
 	}
 	
 	return stats, nil
+}
+
+// RegistrarAuditoria registra una operación en el log de auditoría
+func (d *Database) RegistrarAuditoria(audit *AuditLogDB) error {
+	query := `
+		INSERT INTO audit_log (tabla, registro_id, operacion, usuario, datos_antes, datos_despues, ip_address, user_agent)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+
+	_, err := d.db.Exec(query, audit.Tabla, audit.RegistroID, audit.Operacion,
+		audit.Usuario, audit.DatosAntes, audit.DatosDespues, audit.IPAddress, audit.UserAgent)
+	if err != nil {
+		return fmt.Errorf("error registrando auditoría: %v", err)
+	}
+
+	return nil
+}
+
+// ObtenerAuditoriaPorTabla obtiene registros de auditoría para una tabla específica
+func (d *Database) ObtenerAuditoriaPorTabla(tabla string, limite, offset int) ([]*AuditLogDB, error) {
+	query := `
+		SELECT id, tabla, registro_id, operacion, usuario, datos_antes, datos_despues,
+			   ip_address, user_agent, timestamp
+		FROM audit_log 
+		WHERE tabla = ?
+		ORDER BY timestamp DESC 
+		LIMIT ? OFFSET ?`
+
+	rows, err := d.db.Query(query, tabla, limite, offset)
+	if err != nil {
+		return nil, fmt.Errorf("error obteniendo auditoría: %v", err)
+	}
+	defer rows.Close()
+
+	var registros []*AuditLogDB
+	
+	for rows.Next() {
+		audit := &AuditLogDB{}
+		var datosAntes, datosDespues, ipAddress, userAgent sql.NullString
+		
+		err := rows.Scan(
+			&audit.ID, &audit.Tabla, &audit.RegistroID, &audit.Operacion,
+			&audit.Usuario, &datosAntes, &datosDespues, &ipAddress,
+			&userAgent, &audit.Timestamp,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error escaneando auditoría: %v", err)
+		}
+		
+		if datosAntes.Valid {
+			audit.DatosAntes = datosAntes.String
+		}
+		if datosDespues.Valid {
+			audit.DatosDespues = datosDespues.String
+		}
+		if ipAddress.Valid {
+			audit.IPAddress = ipAddress.String
+		}
+		if userAgent.Valid {
+			audit.UserAgent = userAgent.String
+		}
+		
+		registros = append(registros, audit)
+	}
+	
+	return registros, nil
+}
+
+// ObtenerAuditoriaPorRegistro obtiene auditoría para un registro específico
+func (d *Database) ObtenerAuditoriaPorRegistro(tabla string, registroID int) ([]*AuditLogDB, error) {
+	query := `
+		SELECT id, tabla, registro_id, operacion, usuario, datos_antes, datos_despues,
+			   ip_address, user_agent, timestamp
+		FROM audit_log 
+		WHERE tabla = ? AND registro_id = ?
+		ORDER BY timestamp DESC`
+
+	rows, err := d.db.Query(query, tabla, registroID)
+	if err != nil {
+		return nil, fmt.Errorf("error obteniendo auditoría del registro: %v", err)
+	}
+	defer rows.Close()
+
+	var registros []*AuditLogDB
+	
+	for rows.Next() {
+		audit := &AuditLogDB{}
+		var datosAntes, datosDespues, ipAddress, userAgent sql.NullString
+		
+		err := rows.Scan(
+			&audit.ID, &audit.Tabla, &audit.RegistroID, &audit.Operacion,
+			&audit.Usuario, &datosAntes, &datosDespues, &ipAddress,
+			&userAgent, &audit.Timestamp,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error escaneando auditoría: %v", err)
+		}
+		
+		if datosAntes.Valid {
+			audit.DatosAntes = datosAntes.String
+		}
+		if datosDespues.Valid {
+			audit.DatosDespues = datosDespues.String
+		}
+		if ipAddress.Valid {
+			audit.IPAddress = ipAddress.String
+		}
+		if userAgent.Valid {
+			audit.UserAgent = userAgent.String
+		}
+		
+		registros = append(registros, audit)
+	}
+	
+	return registros, nil
 }

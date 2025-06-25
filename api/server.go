@@ -44,6 +44,10 @@ func (s *Server) setupRoutes() {
 	s.router.HandleFunc("/api/estadisticas", s.EstadisticasDB)
 	s.router.HandleFunc("/api/clientes", s.GuardarClienteDB)
 	s.router.HandleFunc("/api/clientes/buscar", s.BuscarClienteDB)
+	s.router.HandleFunc("/api/sri/estado", s.ConsultarEstadoSRI)
+	s.router.HandleFunc("/api/auditoria", s.ObtenerAuditoriaDB)
+	s.router.HandleFunc("/api/respaldos", s.CrearRespaldoDB)
+	s.router.HandleFunc("/api/respaldos/listar", s.ListarRespaldosDB)
 	
 	// Documentación básica
 	s.router.HandleFunc("/", s.handleRoot)

@@ -1,6 +1,7 @@
 package database
 
 import (
+	"go-facturacion-sri/config"
 	"go-facturacion-sri/factory"
 	"go-facturacion-sri/models"
 	"go-facturacion-sri/sri"
@@ -8,6 +9,11 @@ import (
 	"testing"
 	"time"
 )
+
+// setupTestConfig configura la configuración para tests
+func setupTestConfig() {
+	config.CargarConfiguracionPorDefecto()
+}
 
 func TestNew(t *testing.T) {
 	// Usar base de datos temporal para tests
@@ -26,6 +32,9 @@ func TestNew(t *testing.T) {
 }
 
 func TestGuardarYObtenerFactura(t *testing.T) {
+	// Configurar para tests
+	setupTestConfig()
+	
 	// Usar base de datos temporal
 	dbPath := "test_factura_operaciones.db"
 	defer os.Remove(dbPath)
@@ -113,6 +122,9 @@ func TestGuardarYObtenerFactura(t *testing.T) {
 }
 
 func TestListarFacturas(t *testing.T) {
+	// Configurar para tests
+	setupTestConfig()
+	
 	// Usar base de datos temporal
 	dbPath := "test_listar_facturas.db"
 	defer os.Remove(dbPath)
@@ -181,6 +193,9 @@ func TestListarFacturas(t *testing.T) {
 }
 
 func TestActualizarEstadoFactura(t *testing.T) {
+	// Configurar para tests
+	setupTestConfig()
+	
 	// Usar base de datos temporal
 	dbPath := "test_actualizar_estado.db"
 	defer os.Remove(dbPath)
@@ -270,6 +285,9 @@ func TestActualizarEstadoFactura(t *testing.T) {
 }
 
 func TestObtenerProductosPorFactura(t *testing.T) {
+	// Configurar para tests
+	setupTestConfig()
+	
 	// Usar base de datos temporal
 	dbPath := "test_productos_factura.db"
 	defer os.Remove(dbPath)
@@ -405,6 +423,9 @@ func TestGuardarYObtenerCliente(t *testing.T) {
 }
 
 func TestEstadisticasFacturas(t *testing.T) {
+	// Configurar para tests
+	setupTestConfig()
+	
 	// Usar base de datos temporal
 	dbPath := "test_estadisticas.db"
 	defer os.Remove(dbPath)
@@ -496,6 +517,9 @@ func TestEstadisticasFacturas(t *testing.T) {
 
 // BenchmarkGuardarFactura mide el performance de guardar facturas
 func BenchmarkGuardarFactura(b *testing.B) {
+	// Configurar para tests
+	setupTestConfig()
+	
 	dbPath := "benchmark_facturacion.db"
 	defer os.Remove(dbPath)
 
