@@ -10,5 +10,21 @@
     "codigo": "1",
     "descripcion": "Ambiente de Pruebas - Desarrollo",
     "tipoEmision": "1"
+  },
+  "certificado": {
+    "rutaArchivo": "./certificados/demo.p12",
+    "password": "demo123"
+  },
+  "sri": {
+    "timeoutSegundos": 30,
+    "maxReintentos": 5,
+    "policyID": "https://www.sri.gob.ec/politica-de-firma",
+    "policyHash": "G7roucf600+f03r/o0bAOQ6WAs0=",
+    "endpointRecepcion": "https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline",
+    "endpointAutorizacion": "https://celcer.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline"
+  },
+  "database": {
+    "ruta": "./demo_facturacion.db",
+    "maxConexiones": 5
   }
 }

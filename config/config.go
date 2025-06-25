@@ -17,11 +17,39 @@ type AmbienteConfig struct {
 	TipoEmision string `json:"tipoEmision"` // "1" = normal, "2" = contingencia
 }
 
+// CertificadoConfig configuración del certificado digital
+type CertificadoConfig struct {
+	RutaArchivo string `json:"rutaArchivo"`
+	Password    string `json:"password"`
+}
+
+// SRIConfig configuración específica del SRI
+type SRIConfig struct {
+	TimeoutSegundos   int    `json:"timeoutSegundos"`
+	MaxReintentos     int    `json:"maxReintentos"`
+	PolicyID          string `json:"policyID"`
+	PolicyHash        string `json:"policyHash"`
+	EndpointRecepcion string `json:"endpointRecepcion"`
+	EndpointAutorizacion string `json:"endpointAutorizacion"`
+}
+
+// DatabaseConfig configuración de base de datos
+type DatabaseConfig struct {
+	Ruta         string `json:"ruta"`
+	MaxConexiones int   `json:"maxConexiones"`
+}
+
 // FacturacionConfig - Configuración completa del sistema
 type FacturacionConfig struct {
-	Empresa  EmpresaConfig  `json:"empresa"`
-	Ambiente AmbienteConfig `json:"ambiente"`
+	Empresa     EmpresaConfig     `json:"empresa"`
+	Ambiente    AmbienteConfig    `json:"ambiente"`
+	Certificado CertificadoConfig `json:"certificado"`
+	SRI         SRIConfig         `json:"sri"`
+	Database    DatabaseConfig    `json:"database"`
 }
 
 // Config Global configuration instance
 var Config FacturacionConfig
+
+// ContadorSecuencial contador global para secuenciales
+var ContadorSecuencial int64 = 1

@@ -10,5 +10,21 @@
     "codigo": "2",
     "descripcion": "Ambiente de Producción - SRI Real",
     "tipoEmision": "1"
+  },
+  "certificado": {
+    "rutaArchivo": "./certificados/produccion.p12",
+    "password": "${CERT_PASSWORD}"
+  },
+  "sri": {
+    "timeoutSegundos": 60,
+    "maxReintentos": 3,
+    "policyID": "https://www.sri.gob.ec/politica-de-firma",
+    "policyHash": "G7roucf600+f03r/o0bAOQ6WAs0=",
+    "endpointRecepcion": "https://cel.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline",
+    "endpointAutorizacion": "https://cel.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline"
+  },
+  "database": {
+    "ruta": "./facturacion.db",
+    "maxConexiones": 20
   }
 }
