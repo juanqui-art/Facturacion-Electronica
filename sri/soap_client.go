@@ -24,11 +24,12 @@ const (
 	EndpointAutorizacionProduccion = "https://cel.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline"
 )
 
-// SOAPClient cliente SOAP para SRI Ecuador
+// SOAPClient cliente SOAP para SRI Ecuador con circuit breaker
 type SOAPClient struct {
 	Ambiente        Ambiente
 	TimeoutSegundos int
 	httpClient      *http.Client
+	circuitBreaker  *CircuitBreaker
 }
 
 // RespuestaSolicitud respuesta del servicio de recepción SRI
@@ -113,7 +114,7 @@ type AutorizarComprobante struct {
 	ClaveAcceso string   `xml:"claveAccesoComprobante"`
 }
 
-// NewSOAPClient crea un nuevo cliente SOAP para SRI
+// NewSOAPClient crea un nuevo cliente SOAP para SRI con circuit breaker
 func NewSOAPClient(ambiente Ambiente) *SOAPClient {
 	// Configurar cliente HTTP con timeout y TLS
 	tr := &http.Transport{
@@ -131,11 +132,28 @@ func NewSOAPClient(ambiente Ambiente) *SOAPClient {
 		Ambiente:        ambiente,
 		TimeoutSegundos: 30,
 		httpClient:      client,
+		circuitBreaker:  NuevoCircuitBreakerDefault(),
 	}
 }
 
-// EnviarComprobante envía un comprobante XML al SRI para validación
+// EnviarComprobante envía un comprobante XML al SRI para validación con circuit breaker
 func (c *SOAPClient) EnviarComprobante(xmlComprobante []byte) (*RespuestaSolicitud, error) {
+	// Usar circuit breaker para proteger la comunicación
+	var respuesta *RespuestaSolicitud
+	err := c.circuitBreaker.Ejecutar(func() error {
+		resp, err := c.enviarComprobanteInterno(xmlComprobante)
+		if err != nil {
+			return err
+		}
+		respuesta = resp
+		return nil
+	})
+	
+	return respuesta, err
+}
+
+// enviarComprobanteInterno implementación interna sin circuit breaker
+func (c *SOAPClient) enviarComprobanteInterno(xmlComprobante []byte) (*RespuestaSolicitud, error) {
 	// Codificar XML en base64
 	xmlBase64 := base64.StdEncoding.EncodeToString(xmlComprobante)
 
@@ -198,8 +216,24 @@ func (c *SOAPClient) EnviarComprobante(xmlComprobante []byte) (*RespuestaSolicit
 	return c.parsearRespuestaRecepcion(respBody)
 }
 
-// ConsultarAutorizacion consulta el estado de autorización de un comprobante
+// ConsultarAutorizacion consulta el estado de autorización de un comprobante con circuit breaker
 func (c *SOAPClient) ConsultarAutorizacion(claveAcceso string) (*RespuestaComprobante, error) {
+	// Usar circuit breaker para proteger la comunicación
+	var respuesta *RespuestaComprobante
+	err := c.circuitBreaker.Ejecutar(func() error {
+		resp, err := c.consultarAutorizacionInterno(claveAcceso)
+		if err != nil {
+			return err
+		}
+		respuesta = resp
+		return nil
+	})
+	
+	return respuesta, err
+}
+
+// consultarAutorizacionInterno implementación interna sin circuit breaker
+func (c *SOAPClient) consultarAutorizacionInterno(claveAcceso string) (*RespuestaComprobante, error) {
 	// Crear solicitud SOAP
 	solicitud := SolicitudAutorizacion{
 		SoapNS: "http://schemas.xmlsoap.org/soap/envelope/",
@@ -443,4 +477,26 @@ func MostrarRespuestaAutorizacion(respuesta *RespuestaComprobante) {
 			}
 		}
 	}
+}
+
+// Circuit breaker utility methods
+
+// ObtenerEstadoCircuitBreaker obtiene el estado actual del circuit breaker
+func (c *SOAPClient) ObtenerEstadoCircuitBreaker() EstadoCircuitBreaker {
+	return c.circuitBreaker.ObtenerEstado()
+}
+
+// MostrarEstadoCircuitBreaker muestra información detallada del circuit breaker
+func (c *SOAPClient) MostrarEstadoCircuitBreaker() {
+	c.circuitBreaker.MostrarEstado()
+}
+
+// ReiniciarCircuitBreaker reinicia el circuit breaker (útil para testing)
+func (c *SOAPClient) ReiniciarCircuitBreaker() {
+	c.circuitBreaker.Reiniciar()
+}
+
+// EsSRIOperacional indica si el SRI está operacional según el circuit breaker
+func (c *SOAPClient) EsSRIOperacional() bool {
+	return c.circuitBreaker.EsOperacional()
 }

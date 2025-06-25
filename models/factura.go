@@ -4,6 +4,7 @@ package models
 import (
 	"encoding/xml"
 	"fmt"
+	"log"
 )
 
 // ProductoInput - Datos de un producto individual
@@ -66,15 +67,35 @@ type Factura struct {
 	Detalles       []Detalle      `xml:"detalles>detalle"`
 }
 
-// GenerarXML - Método que convierte la factura a XML
+// GenerarXML - Método que convierte la factura a XML con protección contra panics
 // Receiver: (f Factura) significa que este método "pertenece" a cualquier Factura
-func (f Factura) GenerarXML() ([]byte, error) {
-	// xml.MarshalIndent formatea el XML con indentación bonita
-	xmlData, err := xml.MarshalIndent(f, "", "  ")
-	if err != nil {
-		return nil, err // nil es el valor "vacío" para []byte
+func (f Factura) GenerarXML() (xmlData []byte, err error) {
+	// Protección contra panics durante generación XML
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("[CRITICAL] Panic recovered in GenerarXML: %v", r)
+			xmlData = nil
+			err = fmt.Errorf("error crítico generando XML: %v", r)
+		}
+	}()
+
+	// Validaciones básicas antes de generar XML
+	if f.InfoTributaria.RUC == "" {
+		return nil, fmt.Errorf("no se puede generar XML: RUC vacío")
 	}
-	return xmlData, nil
+	if f.InfoTributaria.ClaveAcceso == "" {
+		return nil, fmt.Errorf("no se puede generar XML: clave de acceso vacía")
+	}
+	if len(f.Detalles) == 0 {
+		return nil, fmt.Errorf("no se puede generar XML: factura sin productos")
+	}
+
+	// xml.MarshalIndent formatea el XML con indentación bonita
+	xmlResult, xmlErr := xml.MarshalIndent(f, "", "  ")
+	if xmlErr != nil {
+		return nil, fmt.Errorf("error marshalling XML: %v", xmlErr)
+	}
+	return xmlResult, nil
 }
 
 // MostrarResumen - Método que imprime un resumen de la factura
