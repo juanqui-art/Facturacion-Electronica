@@ -2,8 +2,105 @@ package validators
 
 import (
 	"go-facturacion-sri/models"
+	"strings"
 	"testing"
 )
+
+// TestValidarRUC prueba la validación de RUCs ecuatorianos
+func TestValidarRUC(t *testing.T) {
+	tests := []struct {
+		name    string
+		ruc     string
+		wantErr bool
+		errMsg  string
+	}{
+		// RUCs válidos - Persona Natural
+		{
+			name:    "RUC persona natural válido - Pichincha",
+			ruc:     "1713175071001",
+			wantErr: false,
+		},
+		{
+			name:    "RUC persona natural válido - Guayas",
+			ruc:     "0926687856001",
+			wantErr: false,
+		},
+		// Note: Using basic validation for now - algorithms need specific valid RUCs for Ecuador
+		// Casos inválidos - longitud
+		{
+			name:    "RUC muy corto",
+			ruc:     "123456789012",
+			wantErr: true,
+			errMsg:  "el RUC debe tener exactamente 13 dígitos",
+		},
+		{
+			name:    "RUC muy largo",
+			ruc:     "12345678901234",
+			wantErr: true,
+			errMsg:  "el RUC debe tener exactamente 13 dígitos",
+		},
+		{
+			name:    "RUC vacío",
+			ruc:     "",
+			wantErr: true,
+			errMsg:  "el RUC debe tener exactamente 13 dígitos",
+		},
+		// Casos inválidos - caracteres
+		{
+			name:    "RUC con letras",
+			ruc:     "171317507100A",
+			wantErr: true,
+			errMsg:  "el RUC solo puede contener números",
+		},
+		// Casos inválidos - provincia
+		{
+			name:    "provincia inválida - 00",
+			ruc:     "0013175071001",
+			wantErr: true,
+			errMsg:  "los dos primeros dígitos del RUC deben estar entre 01 y 24",
+		},
+		{
+			name:    "provincia inválida - 25",
+			ruc:     "2513175071001",
+			wantErr: true,
+			errMsg:  "los dos primeros dígitos del RUC deben estar entre 01 y 24",
+		},
+		// Casos inválidos - tercer dígito
+		{
+			name:    "tercer dígito inválido - 7",
+			ruc:     "1773175071001",
+			wantErr: true,
+			errMsg:  "el tercer dígito del RUC debe ser menor a 6, o igual a 6 (sector público) o 9 (empresa privada)",
+		},
+		// Casos inválidos - terminación incorrecta
+		{
+			name:    "RUC persona natural con terminación incorrecta",
+			ruc:     "1713175071002",
+			wantErr: true,
+			errMsg:  "RUC persona natural debe terminar en 001",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidarRUC(tt.ruc)
+
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("ValidarRUC() error = nil, quería error")
+					return
+				}
+				if tt.errMsg != "" && err.Error() != tt.errMsg {
+					t.Errorf("ValidarRUC() error = %v, quería %v", err.Error(), tt.errMsg)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("ValidarRUC() error = %v, no quería error", err)
+				}
+			}
+		})
+	}
+}
 
 // TestValidarCedula prueba la validación de cédulas ecuatorianas
 func TestValidarCedula(t *testing.T) {
@@ -425,5 +522,59 @@ func BenchmarkValidarFacturaInput(b *testing.B) {
 	}
 	for i := 0; i < b.N; i++ {
 		ValidarFacturaInput(input)
+	}
+}
+
+// TestValidarRUC_MaliciousInputs tests for malicious RUC inputs
+func TestValidarRUC_MaliciousInputs(t *testing.T) {
+	tests := []struct {
+		name    string
+		ruc     string
+		wantErr bool
+	}{
+		{"XSS attempt", "<script>alert('xss')</script>", true},
+		{"SQL injection", "'; DROP TABLE usuarios; --", true},
+		{"Extremely long RUC", "1234567890123456789012345678901234567890", true},
+		{"Null byte injection", "1713175071001\x00", true},
+		{"Empty string", "", true},
+		{"Only whitespaces", "             ", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidarRUC(tt.ruc)
+			if tt.wantErr && err == nil {
+				t.Errorf("ValidarRUC() expected error for malicious input %q", tt.ruc)
+			}
+		})
+	}
+}
+
+// TestSanitizarTexto_Security tests text sanitization
+func TestSanitizarTexto_Security(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+	}{
+		{"XSS script tags", "<script>alert('xss')</script>"},
+		{"HTML img with onerror", "<img src=x onerror=alert(1)>"},
+		{"Control characters", "Normal\x00\x01\x02Text"},
+		{"Very long string", string(make([]byte, 2000))},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := SanitizarTexto(tt.input)
+			
+			// Verify no script tags remain
+			if strings.Contains(result, "<script>") {
+				t.Errorf("SanitizarTexto() failed to sanitize script tags")
+			}
+			
+			// Verify length limit
+			if len(result) > 1000 {
+				t.Errorf("SanitizarTexto() returned string longer than 1000 chars: %d", len(result))
+			}
+		})
 	}
 }
