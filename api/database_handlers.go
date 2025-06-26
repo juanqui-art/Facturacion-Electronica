@@ -11,6 +11,7 @@ import (
 	"go-facturacion-sri/database"
 	"go-facturacion-sri/factory"
 	"go-facturacion-sri/models"
+	"go-facturacion-sri/pdf"
 	"go-facturacion-sri/sri"
 )
 
@@ -387,6 +388,63 @@ func (s *Server) BuscarClienteDB(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// ListarClientesDB lista todos los clientes con filtros opcionales
+func (s *Server) ListarClientesDB(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Obtener parámetros de query
+	nombre := r.URL.Query().Get("nombre")
+	tipoCliente := r.URL.Query().Get("tipo")
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	// Parsear limit y offset
+	limit := 50 // Default
+	if limitStr != "" {
+		if parsedLimit, err := strconv.Atoi(limitStr); err == nil && parsedLimit > 0 {
+			limit = parsedLimit
+		}
+	}
+
+	offset := 0 // Default
+	if offsetStr != "" {
+		if parsedOffset, err := strconv.Atoi(offsetStr); err == nil && parsedOffset >= 0 {
+			offset = parsedOffset
+		}
+	}
+
+	// Conectar a base de datos
+	db, err := database.New("database/facturacion.db")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error conectando a base de datos: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Listar clientes
+	clientes, err := db.ListarClientes(nombre, tipoCliente, limit, offset)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error listando clientes: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]interface{}{
+		"success": true,
+		"data": map[string]interface{}{
+			"clientes": clientes,
+			"count":    len(clientes),
+			"limit":    limit,
+			"offset":   offset,
+		},
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
 // ConsultarEstadoSRI consulta el estado de una factura en el SRI
 func (s *Server) ConsultarEstadoSRI(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -435,6 +493,56 @@ func (s *Server) ConsultarEstadoSRI(w http.ResponseWriter, r *http.Request) {
 		if len(auth.Mensajes) > 0 {
 			response["mensajes"] = auth.Mensajes
 		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// EstadoGeneralSRI verifica el estado general de los servicios del SRI
+func (s *Server) EstadoGeneralSRI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Crear cliente SRI
+	sriClient := sri.NewSOAPClient(sri.Pruebas)
+
+	// Intentar una consulta simple para verificar conectividad
+	// Usamos una clave de acceso de prueba conocida
+	claveTestPruebas := "2501202401179214673900110010010000000011234567893"
+	
+	response := map[string]interface{}{
+		"disponible": false,
+		"mensaje":    "Verificando estado...",
+		"ambiente":   "PRUEBAS",
+		"timestamp":  time.Now().Format(time.RFC3339),
+	}
+
+	// Intentar consulta con timeout
+	done := make(chan bool, 1)
+	var sriError error
+
+	go func() {
+		_, err := sriClient.ConsultarAutorizacion(claveTestPruebas)
+		sriError = err
+		done <- true
+	}()
+
+	// Timeout de 5 segundos
+	select {
+	case <-done:
+		if sriError != nil {
+			response["disponible"] = false
+			response["mensaje"] = fmt.Sprintf("Servicio no disponible: %v", sriError)
+		} else {
+			response["disponible"] = true
+			response["mensaje"] = "Servicio SRI operativo"
+		}
+	case <-time.After(5 * time.Second):
+		response["disponible"] = false
+		response["mensaje"] = "Timeout en la consulta al SRI"
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -609,4 +717,409 @@ func (s *Server) ListarRespaldosDB(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+// ObtenerClienteDB obtiene un cliente específico por ID
+func (s *Server) ObtenerClienteDB(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Obtener ID de la URL
+	idStr := r.URL.Path[len("/api/clientes/"):]
+	if idStr == "" {
+		http.Error(w, "ID de cliente requerido", http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "ID de cliente inválido", http.StatusBadRequest)
+		return
+	}
+
+	// Conectar a base de datos
+	db, err := database.New("database/facturacion.db")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error conectando a base de datos: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Obtener cliente
+	cliente, err := db.ObtenerClientePorID(id)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Cliente no encontrado: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Respuesta
+	response := map[string]interface{}{
+		"success": true,
+		"data":    cliente,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// ActualizarClienteDB actualiza un cliente existente
+func (s *Server) ActualizarClienteDB(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Obtener ID de la URL
+	idStr := r.URL.Path[len("/api/clientes/"):]
+	if idStr == "" {
+		http.Error(w, "ID de cliente requerido", http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "ID de cliente inválido", http.StatusBadRequest)
+		return
+	}
+
+	// Parsear input JSON
+	var input database.ClienteDB
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, fmt.Sprintf("Error parseando JSON: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	// Conectar a base de datos
+	db, err := database.New("database/facturacion.db")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error conectando a base de datos: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Verificar que el cliente existe
+	_, err = db.ObtenerClientePorID(id)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Cliente no encontrado: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Actualizar cliente (establecer ID para update)
+	input.ID = id
+	cliente, err := db.ActualizarCliente(&input)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error actualizando cliente: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Respuesta
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Cliente actualizado exitosamente",
+		"data":    cliente,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// EliminarClienteDB elimina un cliente (soft delete)
+func (s *Server) EliminarClienteDB(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Obtener ID de la URL
+	idStr := r.URL.Path[len("/api/clientes/"):]
+	if idStr == "" {
+		http.Error(w, "ID de cliente requerido", http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "ID de cliente inválido", http.StatusBadRequest)
+		return
+	}
+
+	// Conectar a base de datos
+	db, err := database.New("database/facturacion.db")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error conectando a base de datos: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Verificar que el cliente existe
+	cliente, err := db.ObtenerClientePorID(id)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Cliente no encontrado: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Verificar si el cliente tiene facturas asociadas
+	facturas, err := db.ListarFacturasPorCliente(cliente.Cedula, 1, 0)
+	if err == nil && len(facturas) > 0 {
+		// Cliente tiene facturas, no se puede eliminar completamente
+		// En su lugar, marcamos como inactivo
+		err = db.DesactivarCliente(id)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error desactivando cliente: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		response := map[string]interface{}{
+			"success": true,
+			"message": "Cliente desactivado (tiene facturas asociadas)",
+			"action":  "desactivado",
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	// El cliente no tiene facturas, se puede eliminar
+	err = db.EliminarCliente(id)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error eliminando cliente: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Respuesta
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Cliente eliminado exitosamente",
+		"action":  "eliminado",
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// ActualizarFacturaDB actualiza una factura completa
+func (s *Server) ActualizarFacturaDB(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Obtener ID de la URL
+	idStr := r.URL.Path[len("/api/facturas/db/"):]
+	if idStr == "" {
+		http.Error(w, "ID de factura requerido", http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "ID de factura inválido", http.StatusBadRequest)
+		return
+	}
+
+	// Parsear input JSON
+	var input struct {
+		ClienteCedula string                   `json:"clienteCedula"`
+		ClienteNombre string                   `json:"clienteNombre"`
+		Productos     []database.ProductoDB    `json:"productos"`
+		Observaciones string                   `json:"observaciones"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, fmt.Sprintf("Error parseando JSON: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	// Conectar a base de datos
+	db, err := database.New("database/facturacion.db")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error conectando a base de datos: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Verificar que la factura existe y está en estado BORRADOR
+	factura, err := db.ObtenerFacturaPorID(id)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Factura no encontrada: %v", err), http.StatusNotFound)
+		return
+	}
+
+	if factura.Estado != "BORRADOR" {
+		http.Error(w, "Solo se pueden actualizar facturas en estado BORRADOR", http.StatusBadRequest)
+		return
+	}
+
+	// Actualizar factura
+	facturaActualizada, err := db.ActualizarFactura(id, input.ClienteCedula, input.ClienteNombre, input.Productos, input.Observaciones)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error actualizando factura: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Respuesta
+	response := map[string]interface{}{
+		"success": true,
+		"message": "Factura actualizada exitosamente",
+		"data":    facturaActualizada,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// EliminarFacturaDB elimina/anula una factura
+func (s *Server) EliminarFacturaDB(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Obtener ID de la URL
+	idStr := r.URL.Path[len("/api/facturas/db/"):]
+	if idStr == "" {
+		http.Error(w, "ID de factura requerido", http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "ID de factura inválido", http.StatusBadRequest)
+		return
+	}
+
+	// Conectar a base de datos
+	db, err := database.New("database/facturacion.db")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error conectando a base de datos: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Obtener factura
+	factura, err := db.ObtenerFacturaPorID(id)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Factura no encontrada: %v", err), http.StatusNotFound)
+		return
+	}
+
+	var mensaje string
+	var action string
+
+	// Determinar acción según el estado
+	switch factura.Estado {
+	case "BORRADOR":
+		// Se puede eliminar completamente
+		err = db.EliminarFactura(id)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error eliminando factura: %v", err), http.StatusInternalServerError)
+			return
+		}
+		mensaje = "Factura eliminada exitosamente"
+		action = "eliminada"
+
+	case "ENVIADA", "AUTORIZADA":
+		// No se puede eliminar, solo anular
+		err = db.ActualizarEstadoFactura(id, "ANULADA", "", "", "Anulada por solicitud del usuario")
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error anulando factura: %v", err), http.StatusInternalServerError)
+			return
+		}
+		mensaje = "Factura anulada exitosamente"
+		action = "anulada"
+
+	case "RECHAZADA":
+		// Se puede eliminar
+		err = db.EliminarFactura(id)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error eliminando factura: %v", err), http.StatusInternalServerError)
+			return
+		}
+		mensaje = "Factura eliminada exitosamente"
+		action = "eliminada"
+
+	default:
+		http.Error(w, "Estado de factura no válido para eliminación", http.StatusBadRequest)
+		return
+	}
+
+	// Respuesta
+	response := map[string]interface{}{
+		"success": true,
+		"message": mensaje,
+		"action":  action,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// GenerarPDFFacturaDB genera un PDF para una factura específica
+func (s *Server) GenerarPDFFacturaDB(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Obtener ID de la URL
+	idStr := r.URL.Path[len("/api/facturas/db/"):]
+	idStr = idStr[:len(idStr)-len("/pdf")] // Remover "/pdf" del final
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "ID de factura inválido", http.StatusBadRequest)
+		return
+	}
+
+	// Conectar a base de datos
+	db, err := database.New("database/facturacion.db")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error conectando a base de datos: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Crear generador de PDF
+	pdfGenerator := pdf.NewFacturaPDFGenerator(db)
+
+	// Validar que la factura puede generar PDF
+	err = pdfGenerator.ValidarFacturaParaPDF(id)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error validando factura para PDF: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	// Verificar si se quiere PDF simple
+	simple := r.URL.Query().Get("simple") == "true"
+
+	var pdfBytes []byte
+	if simple {
+		pdfBytes, err = pdfGenerator.GenerarFacturaSimplePDF(id)
+	} else {
+		pdfBytes, err = pdfGenerator.GenerarFacturaPDF(id)
+	}
+
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error generando PDF: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Obtener información de la factura para el nombre del archivo
+	factura, err := db.ObtenerFacturaPorID(id)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error obteniendo factura: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Configurar headers para descarga de PDF
+	filename := fmt.Sprintf("factura_%s.pdf", factura.NumeroFactura)
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+	w.Header().Set("Content-Length", strconv.Itoa(len(pdfBytes)))
+
+	// Escribir PDF
+	w.Write(pdfBytes)
 }

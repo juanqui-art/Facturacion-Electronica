@@ -1,0 +1,496 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+import Button from '../components/Button.astro';
+import Table from '../components/Table.astro';
+---
+
+<Layout title="Facturas - Facturación SRI">
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Gestión de Facturas</h1>
+        <p class="text-gray-600">Administra todas las facturas emitidas</p>
+      </div>
+      <Button variant="primary" id="nueva-factura-btn">
+        📝 Nueva Factura
+      </Button>
+    </div>
+
+    <!-- Filters -->
+    <Card>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+          <select id="filtro-estado" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <option value="">Todos los estados</option>
+            <option value="BORRADOR">Borrador</option>
+            <option value="ENVIADA">Enviada</option>
+            <option value="AUTORIZADA">Autorizada</option>
+            <option value="RECHAZADA">Rechazada</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+          <input type="text" id="filtro-cliente" placeholder="Buscar cliente..." 
+                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Desde</label>
+          <input type="date" id="filtro-fecha-desde" 
+                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        </div>
+        <div class="flex items-end">
+          <Button variant="secondary" id="aplicar-filtros" class="w-full">
+            🔍 Buscar
+          </Button>
+        </div>
+      </div>
+    </Card>
+
+    <!-- Facturas Table -->
+    <Card>
+      <div id="facturas-loading" class="flex items-center justify-center py-12">
+        <div class="text-center">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p class="text-gray-600">Cargando facturas...</p>
+        </div>
+      </div>
+
+      <div id="facturas-content" class="hidden">
+        <Table headers={["Número", "Cliente", "Fecha", "Total", "Estado", "Acciones"]}>
+          <tbody id="facturas-tbody">
+            <!-- Las facturas se cargarán aquí dinámicamente -->
+          </tbody>
+        </Table>
+        
+        <!-- Pagination -->
+        <div class="mt-6 flex items-center justify-between">
+          <div class="text-sm text-gray-700">
+            Mostrando <span id="pagination-start">0</span> a <span id="pagination-end">0</span> de <span id="pagination-total">0</span> facturas
+          </div>
+          <div class="flex space-x-2">
+            <Button variant="secondary" size="sm" id="prev-page" disabled>
+              ← Anterior
+            </Button>
+            <Button variant="secondary" size="sm" id="next-page" disabled>
+              Siguiente →
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div id="facturas-error" class="hidden text-center py-12">
+        <div class="text-red-600">
+          <p class="text-lg font-medium">Error al cargar facturas</p>
+          <p class="text-sm">Por favor, intenta nuevamente</p>
+        </div>
+        <Button variant="primary" class="mt-4" onclick="loadFacturas()">
+          🔄 Reintentar
+        </Button>
+      </div>
+    </Card>
+  </div>
+
+  <!-- Modal Nueva Factura -->
+  <div id="modal-nueva-factura" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen px-4">
+      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">Nueva Factura</h3>
+        </div>
+        
+        <form id="form-nueva-factura" class="px-6 py-4 space-y-4">
+          <!-- Cliente -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+            <div class="flex space-x-2">
+              <input type="text" id="cliente-cedula" placeholder="Cédula/RUC" required
+                     class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+              <input type="text" id="cliente-nombre" placeholder="Nombre completo" required
+                     class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+          </div>
+
+          <!-- Productos -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Productos</label>
+            <div id="productos-container" class="space-y-2">
+              <div class="grid grid-cols-12 gap-2 items-end">
+                <div class="col-span-2">
+                  <input type="text" placeholder="Código" class="producto-codigo w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div class="col-span-4">
+                  <input type="text" placeholder="Descripción" class="producto-descripcion w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div class="col-span-2">
+                  <input type="number" step="0.01" placeholder="Cantidad" class="producto-cantidad w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div class="col-span-2">
+                  <input type="number" step="0.01" placeholder="Precio" class="producto-precio w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <div class="col-span-2">
+                  <span class="producto-subtotal font-medium">$0.00</span>
+                </div>
+              </div>
+            </div>
+            <Button type="button" variant="secondary" size="sm" class="mt-2" id="agregar-producto">
+              + Agregar Producto
+            </Button>
+          </div>
+
+          <!-- Total -->
+          <div class="border-t pt-4">
+            <div class="flex justify-between items-center text-lg font-medium">
+              <span>Total:</span>
+              <span id="factura-total">$0.00</span>
+            </div>
+          </div>
+        </form>
+
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+          <Button variant="secondary" id="cancelar-factura">
+            Cancelar
+          </Button>
+          <Button variant="primary" id="guardar-factura">
+            💾 Guardar Factura
+          </Button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // API Configuration - Detecta automáticamente el entorno
+    const API_BASE = window.location.port === '4321' 
+      ? 'http://localhost:8080/api'  // Desarrollo: Astro en 4321, Go en 8080
+      : window.location.origin + '/api';  // Producción: Todo en el mismo puerto
+    
+    let currentPage = 1;
+    let facturas = [];
+
+    // Load facturas
+    async function loadFacturas() {
+      try {
+        showLoading();
+        
+        const response = await fetch(`${API_BASE}/facturas/db/list`);
+        if (!response.ok) {
+          throw new Error('Error al cargar facturas');
+        }
+        
+        const facturasData = await response.json();
+        console.log('API Response:', facturasData); // Debug log
+        
+        // La API devuelve { success: true, data: { facturas: [...] } }
+        facturas = facturasData.success && facturasData.data 
+          ? facturasData.data.facturas 
+          : [];
+        displayFacturas(facturas);
+        showContent();
+      } catch (error) {
+        console.error('Error loading facturas:', error);
+        showError();
+      }
+    }
+
+    function displayFacturas(facturasToShow) {
+      const tbody = document.getElementById('facturas-tbody');
+      
+      if (!facturasToShow || facturasToShow.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+              No hay facturas para mostrar
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = facturasToShow.map(factura => `
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+            #${factura.numeroFactura || 'N/A'}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            ${factura.clienteNombre || 'Sin nombre'}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            ${formatDate(factura.fechaEmision)}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+            $${factura.total || '0.00'}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(factura.estado)}">
+              ${factura.estado || 'BORRADOR'}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+            <button class="text-blue-600 hover:text-blue-900" onclick="verFactura(${factura.id})">Ver</button>
+            <button class="text-green-600 hover:text-green-900" onclick="descargarFactura(${factura.id})">PDF</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function showLoading() {
+      document.getElementById('facturas-loading').classList.remove('hidden');
+      document.getElementById('facturas-content').classList.add('hidden');
+      document.getElementById('facturas-error').classList.add('hidden');
+    }
+
+    function showContent() {
+      document.getElementById('facturas-loading').classList.add('hidden');
+      document.getElementById('facturas-content').classList.remove('hidden');
+      document.getElementById('facturas-error').classList.add('hidden');
+    }
+
+    function showError() {
+      document.getElementById('facturas-loading').classList.add('hidden');
+      document.getElementById('facturas-content').classList.add('hidden');
+      document.getElementById('facturas-error').classList.remove('hidden');
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      return new Date(dateString).toLocaleDateString('es-ES');
+    }
+
+    function getStatusColor(status) {
+      switch (status?.toUpperCase()) {
+        case 'AUTORIZADA':
+          return 'bg-green-100 text-green-800';
+        case 'ENVIADA':
+          return 'bg-blue-100 text-blue-800';
+        case 'RECHAZADA':
+          return 'bg-red-100 text-red-800';
+        case 'BORRADOR':
+        default:
+          return 'bg-gray-100 text-gray-800';
+      }
+    }
+
+    // Modal handling
+    function openModal() {
+      document.getElementById('modal-nueva-factura').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-nueva-factura').classList.add('hidden');
+      resetForm();
+    }
+
+    function resetForm() {
+      document.getElementById('form-nueva-factura').reset();
+      const productosContainer = document.getElementById('productos-container');
+      // Keep only the first product row
+      const productRows = productosContainer.children;
+      for (let i = productRows.length - 1; i > 0; i--) {
+        productRows[i].remove();
+      }
+      updateTotal();
+    }
+
+    // Product management
+    function addProductRow() {
+      const container = document.getElementById('productos-container');
+      const newRow = container.children[0].cloneNode(true);
+      
+      // Clear the inputs
+      newRow.querySelectorAll('input').forEach(input => input.value = '');
+      newRow.querySelector('.producto-subtotal').textContent = '$0.00';
+      
+      // Add remove button
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'col-span-2 text-red-600 hover:text-red-900';
+      removeBtn.innerHTML = '🗑️ Eliminar';
+      removeBtn.onclick = function() {
+        newRow.remove();
+        updateTotal();
+      };
+      newRow.appendChild(removeBtn);
+      
+      container.appendChild(newRow);
+      
+      // Add event listeners
+      addProductEventListeners(newRow);
+    }
+
+    function addProductEventListeners(row) {
+      const cantidadInput = row.querySelector('.producto-cantidad');
+      const precioInput = row.querySelector('.producto-precio');
+      
+      [cantidadInput, precioInput].forEach(input => {
+        input.addEventListener('input', () => {
+          updateProductSubtotal(row);
+          updateTotal();
+        });
+      });
+    }
+
+    function updateProductSubtotal(row) {
+      const cantidad = parseFloat(row.querySelector('.producto-cantidad').value) || 0;
+      const precio = parseFloat(row.querySelector('.producto-precio').value) || 0;
+      const subtotal = cantidad * precio;
+      
+      row.querySelector('.producto-subtotal').textContent = `$${subtotal.toFixed(2)}`;
+    }
+
+    function updateTotal() {
+      const productRows = document.querySelectorAll('#productos-container > div');
+      let total = 0;
+      
+      productRows.forEach(row => {
+        const cantidad = parseFloat(row.querySelector('.producto-cantidad').value) || 0;
+        const precio = parseFloat(row.querySelector('.producto-precio').value) || 0;
+        total += cantidad * precio;
+      });
+      
+      document.getElementById('factura-total').textContent = `$${total.toFixed(2)}`;
+    }
+
+    // Save factura
+    async function saveFactura() {
+      try {
+        const formData = getFormData();
+        
+        const response = await fetch(`${API_BASE}/facturas/db`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al guardar la factura');
+        }
+
+        const result = await response.json();
+        console.log('Factura guardada:', result);
+        
+        closeModal();
+        loadFacturas();
+        
+        // Show success message
+        if (window.showSuccess) {
+          window.showSuccess('Factura guardada exitosamente', {
+            title: '¡Éxito!',
+            actionText: 'Ver facturas',
+            action: 'window.location.reload()'
+          });
+        } else {
+          alert('Factura guardada exitosamente');
+        }
+        
+      } catch (error) {
+        console.error('Error saving factura:', error);
+        if (window.showError) {
+          window.showError('Error al guardar la factura: ' + error.message, {
+            title: 'Error',
+            persistent: true
+          });
+        } else {
+          alert('Error al guardar la factura: ' + error.message);
+        }
+      }
+    }
+
+    function getFormData() {
+      const clienteCedula = document.getElementById('cliente-cedula').value;
+      const clienteNombre = document.getElementById('cliente-nombre').value;
+      
+      const productos = [];
+      const productRows = document.querySelectorAll('#productos-container > div');
+      
+      productRows.forEach(row => {
+        const codigo = row.querySelector('.producto-codigo').value;
+        const descripcion = row.querySelector('.producto-descripcion').value;
+        const cantidad = parseFloat(row.querySelector('.producto-cantidad').value) || 0;
+        const precio = parseFloat(row.querySelector('.producto-precio').value) || 0;
+        
+        if (codigo && descripcion && cantidad > 0 && precio > 0) {
+          productos.push({
+            codigo,
+            descripcion,
+            cantidad,
+            precio_unitario: precio
+          });
+        }
+      });
+
+      return {
+        clienteCedula: clienteCedula,
+        clienteNombre: clienteNombre,
+        productos
+      };
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      loadFacturas();
+      
+      // Modal events
+      document.getElementById('nueva-factura-btn').addEventListener('click', openModal);
+      document.getElementById('cancelar-factura').addEventListener('click', closeModal);
+      document.getElementById('guardar-factura').addEventListener('click', saveFactura);
+      
+      // Add product button
+      document.getElementById('agregar-producto').addEventListener('click', addProductRow);
+      
+      // Add event listeners to first product row
+      addProductEventListeners(document.querySelector('#productos-container > div'));
+      
+      // Close modal on backdrop click
+      document.getElementById('modal-nueva-factura').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeModal();
+        }
+      });
+      
+      // Filters
+      document.getElementById('aplicar-filtros').addEventListener('click', applyFilters);
+    });
+
+    function applyFilters() {
+      const estado = document.getElementById('filtro-estado').value;
+      const cliente = document.getElementById('filtro-cliente').value.toLowerCase();
+      const fechaDesde = document.getElementById('filtro-fecha-desde').value;
+      
+      let filteredFacturas = facturas;
+      
+      if (estado) {
+        filteredFacturas = filteredFacturas.filter(f => f.estado === estado);
+      }
+      
+      if (cliente) {
+        filteredFacturas = filteredFacturas.filter(f => 
+          f.clienteNombre?.toLowerCase().includes(cliente)
+        );
+      }
+      
+      if (fechaDesde) {
+        filteredFacturas = filteredFacturas.filter(f => 
+          new Date(f.fechaEmision) >= new Date(fechaDesde)
+        );
+      }
+      
+      displayFacturas(filteredFacturas);
+    }
+
+    // Placeholder functions
+    function verFactura(id) {
+      alert(`Ver factura ${id} - Función pendiente de implementar`);
+    }
+
+    function descargarFactura(id) {
+      // Descargar PDF de la factura
+      const url = `${API_BASE}/facturas/db/${id}/pdf`;
+      window.open(url, '_blank');
+    }
+  </script>
+</Layout>
