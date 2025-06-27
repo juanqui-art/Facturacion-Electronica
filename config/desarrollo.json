@@ -1,10 +1,14 @@
 {
   "empresa": {
-    "razonSocial": "EMPRESA DEMO S.A.",
-    "ruc": "1234567890001",
+    "razonSocial": "INNOVATECH SOLUTIONS CIA. LTDA.",
+    "ruc": "1791000005001",
     "establecimiento": "001",
     "puntoEmision": "001",
-    "direccion": "Av. Amazonas y Naciones Unidas, Quito, Ecuador"
+    "direccion": "Av. República del Salvador N36-84 y Naciones Unidas, Quito, Ecuador",
+    "telefono": "+593-2-2234567",
+    "email": "facturacion@innovatech.ec",
+    "contacto": "Juan Pérez - Gerente General",
+    "sitioWeb": "https://innovatech.ec"
   },
   "ambiente": {
     "codigo": "1",
@@ -12,8 +16,10 @@
     "tipoEmision": "1"
   },
   "certificado": {
-    "rutaArchivo": "./certificados/demo.p12",
-    "password": "demo123"
+    "rutaArchivo": "./certificados/certificado-desarrollo.p12",
+    "password": "",
+    "habilitado": false,
+    "modoDemo": true
   },
   "sri": {
     "timeoutSegundos": 30,
