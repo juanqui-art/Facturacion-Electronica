@@ -8,6 +8,30 @@ Sistema de facturación electrónica basado en Go para el SRI de Ecuador (Servic
 
 ## Comandos de Desarrollo
 
+### Custom Slash Commands (Claude Code)
+
+**Sistema de comandos inteligentes** para debugging y gestión rápida:
+
+```bash
+# Debugging y Diagnóstico
+/debug:auth "login failing with 401"          # Análisis inteligente de autenticación
+/debug:sri "certificate expired"              # Debugging específico SRI
+/test:api "all endpoints"                      # Testing completo API
+
+# Configuración y Setup
+/setup:cert                                    # Guía interactiva certificados BCE
+/db:query "SELECT COUNT(*) FROM facturas"     # Consultas con análisis automático
+/deploy:check                                  # Verificación pre-deployment
+
+# Ejemplos de uso específicos
+/debug:auth "CORS error in frontend"          # → Analiza problemas CORS
+/debug:sri "XML validation failed"            # → Debug validación XML SRI
+/setup:cert "production environment"          # → Guía certificados producción
+/db:query "performance analysis"              # → Análisis rendimiento BD
+```
+
+### Comandos Tradicionales de Desarrollo
+
 ```bash
 # Ejecutar modos de aplicación
 go run main.go test_validaciones.go           # Modo demo con ejemplos
@@ -186,8 +210,33 @@ El sistema carga configuración desde archivos JSON externos:
 
 ## Flujo de Trabajo de Desarrollo
 
+### Desarrollo Rápido con Custom Commands
+
+1. **Análisis de Problemas**: `/debug:auth "problema específico"` o `/debug:sri "error SRI"`
+2. **Testing Dirigido**: `/test:api "funcionalidad específica"`
+3. **Configuración**: `/setup:cert` para certificados o `/db:query "SQL"`
+4. **Verificación**: `/deploy:check` antes de deployment
+
+### Flujo Tradicional
+
 1. **Modificar Código**: Hacer cambios a archivos `.go`
 2. **Ejecutar Pruebas**: `go test ./...` para asegurar que nada se rompa
 3. **Formatear Código**: `go fmt ./...` para estilo consistente
 4. **Probar API**: `./test_api.sh` para pruebas de integración
 5. **Verificar Cobertura**: `go test -cover ./...` para monitorear cobertura de pruebas
+
+## Custom Commands disponibles
+
+### Debugging Inteligente
+- `/debug:auth "mensaje"` - Análisis completo de problemas de autenticación
+- `/debug:sri "error"` - Debugging específico de integración SRI
+
+### Testing y Validación  
+- `/test:api "scope"` - Testing dirigido de endpoints API
+- `/deploy:check` - Verificación completa pre-deployment
+
+### Configuración y Setup
+- `/setup:cert` - Guía interactiva para certificados digitales BCE
+- `/db:query "SQL"` - Ejecución y análisis de consultas de base de datos
+
+Los custom commands proporcionan análisis contextual, sugerencias específicas y debugging automático adaptado al stack tecnológico del proyecto (Go + SRI + Astro).

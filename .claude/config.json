@@ -1,0 +1,96 @@
+{
+  "project": "Sistema de Facturación Electrónica SRI Ecuador",
+  "version": "2.0.0",
+  "description": "Custom Claude commands para debugging inteligente y gestión del proyecto",
+  "format": "instructions",
+  "commands": {
+    "debug": {
+      "auth": {
+        "file": "commands/debug-auth.md",
+        "description": "Debugging inteligente de problemas de autenticación",
+        "examples": [
+          "/debug:auth \"login failing with 401\"",
+          "/debug:auth \"certificate not loading\"",
+          "/debug:auth \"CORS error in frontend\""
+        ]
+      },
+      "sri": {
+        "file": "commands/debug-sri.md", 
+        "description": "Análisis de problemas de integración SRI",
+        "examples": [
+          "/debug:sri \"certificate expired\"",
+          "/debug:sri \"XML validation failed\"",
+          "/debug:sri \"SRI endpoint not responding\""
+        ]
+      }
+    },
+    "test": {
+      "api": {
+        "file": "commands/test-api.md",
+        "description": "Testing completo de API endpoints",
+        "examples": [
+          "/test:api \"all endpoints\"",
+          "/test:api \"facturas CRUD\"",
+          "/test:api \"PDF generation\""
+        ]
+      }
+    },
+    "setup": {
+      "cert": {
+        "file": "commands/setup-cert.md",
+        "description": "Guía interactiva para configurar certificados digitales",
+        "examples": [
+          "/setup:cert",
+          "/setup:cert \"production environment\"",
+          "/setup:cert \"BCE certificate\""
+        ]
+      }
+    },
+    "db": {
+      "query": {
+        "file": "commands/db-query.md",
+        "description": "Ejecutar y analizar consultas de base de datos",
+        "examples": [
+          "/db:query \"SELECT COUNT(*) FROM facturas\"",
+          "/db:query \"show table structure\"",
+          "/db:query \"performance analysis\""
+        ]
+      }
+    },
+    "deploy": {
+      "check": {
+        "file": "commands/deploy-check.md",
+        "description": "Verificación completa antes de deployment",
+        "examples": [
+          "/deploy:check",
+          "/deploy:check \"production readiness\"",
+          "/deploy:check \"security validation\""
+        ]
+      }
+    }
+  },
+  "templates": {
+    "error-analysis": {
+      "file": "templates/error-analysis.md",
+      "description": "Template para análisis estructurado de errores"
+    }
+  },
+  "project_specifics": {
+    "stack": ["Go", "SQLite", "Astro", "TypeScript", "Tailwind CSS"],
+    "sri_integration": true,
+    "digital_certificates": true,
+    "environments": ["desarrollo", "certificacion", "produccion"],
+    "main_endpoints": [
+      "http://localhost:8080/health",
+      "http://localhost:8080/api/facturas", 
+      "http://localhost:8080/api/clientes"
+    ],
+    "common_issues": [
+      "Certificate configuration",
+      "SRI connectivity", 
+      "XML validation",
+      "RUC validation",
+      "CORS between frontend/backend"
+    ]
+  }
+}

@@ -1,0 +1,235 @@
+{
+  "project": "Sistema de Facturación Electrónica SRI Ecuador",
+  "version": "1.0.0",
+  "description": "Custom slash commands para acelerar desarrollo y debugging",
+  "commands": {
+    "dev": {
+      "description": "Comandos de desarrollo",
+      "commands": {
+        "start": {
+          "description": "Iniciar servidor API",
+          "script": "scripts/dev.sh start",
+          "params": ["puerto?"],
+          "examples": ["/dev:start", "/dev:start 3000"],
+          "help": "Inicia el servidor API Go en puerto especificado (8080 por defecto)"
+        },
+        "test": {
+          "description": "Ejecutar tests",
+          "script": "scripts/dev.sh test",
+          "params": ["paquete?"],
+          "examples": ["/dev:test", "/dev:test ./sri"],
+          "help": "Ejecuta tests de todo el proyecto o paquete específico"
+        },
+        "build": {
+          "description": "Compilar proyecto",
+          "script": "scripts/dev.sh build",
+          "params": [],
+          "examples": ["/dev:build"],
+          "help": "Compila el proyecto completo"
+        },
+        "lint": {
+          "description": "Linting y formateo",
+          "script": "scripts/dev.sh lint",
+          "params": [],
+          "examples": ["/dev:lint"],
+          "help": "Ejecuta go fmt, go vet y go mod tidy"
+        },
+        "coverage": {
+          "description": "Reporte de cobertura",
+          "script": "scripts/dev.sh coverage",
+          "params": [],
+          "examples": ["/dev:coverage"],
+          "help": "Genera reporte HTML de cobertura de tests"
+        }
+      }
+    },
+    "debug": {
+      "description": "Comandos de debugging",
+      "commands": {
+        "api": {
+          "description": "Test completo API",
+          "script": "scripts/debug.sh api",
+          "params": [],
+          "examples": ["/debug:api"],
+          "help": "Ejecuta test_api.sh completo con todos los endpoints"
+        },
+        "sri": {
+          "description": "Testing integración SRI",
+          "script": "scripts/debug.sh sri",
+          "params": [],
+          "examples": ["/debug:sri"],
+          "help": "Ejecuta todos los tests de integración SRI"
+        },
+        "db": {
+          "description": "Verificar estado DB",
+          "script": "scripts/debug.sh db",
+          "params": [],
+          "examples": ["/debug:db"],
+          "help": "Verifica conexión y estado de la base de datos"
+        },
+        "auth": {
+          "description": "Debug autenticación",
+          "script": "scripts/debug.sh auth",
+          "params": ["mensaje"],
+          "examples": ["/debug:auth \"login failing with 401\""],
+          "help": "Ejecuta diagnóstico completo de autenticación"
+        },
+        "logs": {
+          "description": "Mostrar logs recientes",
+          "script": "scripts/debug.sh logs",
+          "params": ["lines?"],
+          "examples": ["/debug:logs", "/debug:logs 50"],
+          "help": "Muestra logs recientes del sistema"
+        }
+      }
+    },
+    "project": {
+      "description": "Gestión de proyecto",
+      "commands": {
+        "status": {
+          "description": "Estado completo proyecto",
+          "script": "scripts/project.sh status",
+          "params": [],
+          "examples": ["/project:status"],
+          "help": "Git status + todo list + health check"
+        },
+        "commit": {
+          "description": "Commit con formato estándar",
+          "script": "scripts/project.sh commit",
+          "params": ["mensaje"],
+          "examples": ["/project:commit \"fix: authentication bug\""],
+          "help": "Crea commit con formato estándar del proyecto"
+        },
+        "backup": {
+          "description": "Crear backup completo",
+          "script": "scripts/project.sh backup",
+          "params": [],
+          "examples": ["/project:backup"],
+          "help": "Crea backup completo del proyecto y base de datos"
+        },
+        "clean": {
+          "description": "Limpiar archivos temporales",
+          "script": "scripts/project.sh clean",
+          "params": [],
+          "examples": ["/project:clean"],
+          "help": "Limpia archivos temporales, logs y builds"
+        },
+        "docs": {
+          "description": "Actualizar documentación",
+          "script": "scripts/project.sh docs",
+          "params": [],
+          "examples": ["/project:docs"],
+          "help": "Regenera documentación del proyecto"
+        }
+      }
+    },
+    "sri": {
+      "description": "Operaciones SRI",
+      "commands": {
+        "demo": {
+          "description": "Demo SRI completo",
+          "script": "scripts/sri.sh demo",
+          "params": [],
+          "examples": ["/sri:demo"],
+          "help": "Ejecuta demo completo de integración SRI"
+        },
+        "cert-check": {
+          "description": "Verificar certificados",
+          "script": "scripts/sri.sh cert-check",
+          "params": [],
+          "examples": ["/sri:cert-check"],
+          "help": "Verifica estado y vigencia de certificados"
+        },
+        "test-integration": {
+          "description": "Test integración real",
+          "script": "scripts/sri.sh test-integration",
+          "params": [],
+          "examples": ["/sri:test-integration"],
+          "help": "Testing completo de integración real con SRI"
+        },
+        "config": {
+          "description": "Mostrar configuración",
+          "script": "scripts/sri.sh config",
+          "params": [],
+          "examples": ["/sri:config"],
+          "help": "Muestra configuración SRI actual"
+        }
+      }
+    },
+    "db": {
+      "description": "Operaciones base de datos",
+      "commands": {
+        "seed": {
+          "description": "Poblar con datos demo",
+          "script": "scripts/db.sh seed",
+          "params": [],
+          "examples": ["/db:seed"],
+          "help": "Puebla la base de datos con datos de demostración"
+        },
+        "backup": {
+          "description": "Crear backup específico",
+          "script": "scripts/db.sh backup",
+          "params": ["nombre?"],
+          "examples": ["/db:backup", "/db:backup produccion"],
+          "help": "Crea backup de la base de datos"
+        },
+        "reset": {
+          "description": "Reset a estado inicial",
+          "script": "scripts/db.sh reset",
+          "params": [],
+          "examples": ["/db:reset"],
+          "help": "Resetea base de datos a estado inicial"
+        },
+        "query": {
+          "description": "Ejecutar query directa",
+          "script": "scripts/db.sh query",
+          "params": ["sql"],
+          "examples": ["/db:query \"SELECT COUNT(*) FROM facturas\""],
+          "help": "Ejecuta query SQL directa en la base de datos"
+        }
+      }
+    },
+    "web": {
+      "description": "Operaciones frontend",
+      "commands": {
+        "dev": {
+          "description": "Astro dev server",
+          "script": "scripts/web.sh dev",
+          "params": [],
+          "examples": ["/web:dev"],
+          "help": "Inicia servidor de desarrollo Astro"
+        },
+        "build": {
+          "description": "Build para producción",
+          "script": "scripts/web.sh build",
+          "params": [],
+          "examples": ["/web:build"],
+          "help": "Compila frontend para producción"
+        },
+        "test": {
+          "description": "Tests frontend",
+          "script": "scripts/web.sh test",
+          "params": [],
+          "examples": ["/web:test"],
+          "help": "Ejecuta tests del frontend"
+        },
+        "lint": {
+          "description": "Lint código frontend",
+          "script": "scripts/web.sh lint",
+          "params": [],
+          "examples": ["/web:lint"],
+          "help": "Ejecuta linting del código frontend"
+        }
+      }
+    }
+  },
+  "globals": {
+    "help": {
+      "description": "Mostrar ayuda de comandos",
+      "script": "scripts/help.sh",
+      "params": ["comando?"],
+      "examples": ["/help", "/help dev", "/help debug:auth"],
+      "help": "Muestra ayuda general o específica de comandos"
+    }
+  }
+}
