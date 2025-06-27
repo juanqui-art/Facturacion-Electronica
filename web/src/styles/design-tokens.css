@@ -1,0 +1,365 @@
+/**
+ * Vercel-Inspired Design Tokens - Sistema de diseño moderno
+ * Compatible con Astro 5.x y optimizado para dark/light mode
+ * Basado en el sistema de diseño de Vercel.com
+ */
+
+:root {
+  /* ===============================
+     SPACING SYSTEM - 4px grid (Vercel style)
+  =============================== */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0_5: 0.125rem;   /* 2px */
+  --space-1: 0.25rem;      /* 4px */
+  --space-1_5: 0.375rem;   /* 6px */
+  --space-2: 0.5rem;       /* 8px */
+  --space-2_5: 0.625rem;   /* 10px */
+  --space-3: 0.75rem;      /* 12px */
+  --space-3_5: 0.875rem;   /* 14px */
+  --space-4: 1rem;         /* 16px */
+  --space-5: 1.25rem;      /* 20px */
+  --space-6: 1.5rem;       /* 24px */
+  --space-7: 1.75rem;      /* 28px */
+  --space-8: 2rem;         /* 32px */
+  --space-9: 2.25rem;      /* 36px */
+  --space-10: 2.5rem;      /* 40px */
+  --space-11: 2.75rem;     /* 44px */
+  --space-12: 3rem;        /* 48px */
+  --space-14: 3.5rem;      /* 56px */
+  --space-16: 4rem;        /* 64px */
+  --space-20: 5rem;        /* 80px */
+  --space-24: 6rem;        /* 96px */
+  --space-28: 7rem;        /* 112px */
+  --space-32: 8rem;        /* 128px */
+  --space-36: 9rem;        /* 144px */
+  --space-40: 10rem;       /* 160px */
+  --space-44: 11rem;       /* 176px */
+  --space-48: 12rem;       /* 192px */
+  --space-52: 13rem;       /* 208px */
+  --space-56: 14rem;       /* 224px */
+  --space-60: 15rem;       /* 240px */
+  --space-64: 16rem;       /* 256px */
+  --space-72: 18rem;       /* 288px */
+  --space-80: 20rem;       /* 320px */
+  --space-96: 24rem;       /* 384px */
+
+  /* ===============================
+     TYPOGRAPHY SYSTEM - Vercel Style
+  =============================== */
+  
+  /* Font Families - Vercel uses Geist */
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  
+  /* Font Sizes */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.875rem;    /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg: 1.125rem;    /* 18px */
+  --text-xl: 1.25rem;     /* 20px */
+  --text-2xl: 1.5rem;     /* 24px */
+  --text-3xl: 1.875rem;   /* 30px */
+  --text-4xl: 2.25rem;    /* 36px */
+  --text-5xl: 3rem;       /* 48px */
+  
+  /* Font Weights */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+
+  /* ===============================
+     VERCEL COLOR SYSTEM - Light Mode
+  =============================== */
+  
+  /* Vercel Background Colors - Clean and minimal */
+  --geist-background: 255 255 255;        /* Pure white #ffffff */
+  --geist-secondary: 250 250 250;         /* Subtle gray #fafafa */
+  --geist-tertiary: 245 245 245;          /* Light gray #f5f5f5 */
+  --geist-quaternary: 240 240 240;        /* Border gray #f0f0f0 */
+  --geist-overlay: 0 0 0 / 0.4;           /* Modal overlay */
+  
+  /* Legacy background variables for compatibility */
+  --bg-primary: var(--geist-background);
+  --bg-secondary: var(--geist-secondary);
+  --bg-tertiary: var(--geist-tertiary);
+  --bg-quaternary: var(--geist-quaternary);
+  --bg-overlay: var(--geist-overlay);
+  
+  /* Vercel Text Colors - High contrast, minimal */
+  --geist-foreground: 0 0 0;              /* Pure black #000000 */
+  --geist-secondary-text: 102 102 102;    /* Medium gray #666666 */
+  --geist-tertiary-text: 136 136 136;     /* Light gray #888888 */
+  --geist-quaternary-text: 170 170 170;   /* Very light gray #aaaaaa */
+  --geist-inverse: 255 255 255;           /* White text */
+  
+  /* Legacy text variables for compatibility */
+  --text-primary: var(--geist-foreground);
+  --text-secondary: var(--geist-secondary-text);
+  --text-tertiary: var(--geist-tertiary-text);
+  --text-quaternary: var(--geist-quaternary-text);
+  --text-inverse: var(--geist-inverse);
+  
+  /* Vercel Border Colors - Subtle and minimal */
+  --geist-border: 234 234 234;            /* Light border #eaeaea */
+  --geist-border-hover: 208 208 208;      /* Hover border #d0d0d0 */
+  --geist-border-focus: 0 112 243;        /* Focus blue #0070f3 */
+  
+  /* Legacy border variables for compatibility */
+  --border-primary: var(--geist-border);
+  --border-secondary: var(--geist-border-hover);
+  --border-tertiary: var(--geist-tertiary-text);
+  --border-focus: var(--geist-border-focus);
+  
+  /* Vercel Brand Colors - Signature blue and accents */
+  --vercel-blue: 0 112 243;               /* Vercel blue #0070f3 */
+  --vercel-blue-hover: 0 100 229;         /* Darker blue #0064e5 */
+  --vercel-blue-light: 59 130 246;        /* Light blue #3b82f6 */
+  --vercel-blue-pale: 238 242 255;        /* Very light blue #eef2ff */
+  
+  /* Legacy brand variables for compatibility */
+  --color-primary: var(--vercel-blue);
+  --color-primary-hover: var(--vercel-blue-hover);
+  --color-primary-light: var(--vercel-blue-pale);
+  --color-primary-dark: var(--vercel-blue-hover);
+  
+  /* Semantic Colors */
+  --color-success: 16 185 129;      /* emerald-500 */
+  --color-success-light: 209 250 229; /* emerald-100 */
+  --color-success-dark: 5 150 105;  /* emerald-600 */
+  
+  --color-warning: 245 158 11;      /* amber-500 */
+  --color-warning-light: 254 243 199; /* amber-100 */
+  --color-warning-dark: 217 119 6;  /* amber-600 */
+  
+  --color-error: 239 68 68;         /* red-500 */
+  --color-error-light: 254 226 226; /* red-100 */
+  --color-error-dark: 220 38 38;    /* red-600 */
+  
+  --color-info: 59 130 246;         /* blue-500 */
+  --color-info-light: 219 234 254;  /* blue-100 */
+  --color-info-dark: 37 99 235;     /* blue-600 */
+
+  /* ===============================
+     VERCEL SHADOWS - Subtle and Clean
+  =============================== */
+  --shadow-none: none;
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 2px 4px 0 rgb(0 0 0 / 0.06), 0 2px 4px 0 rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 4px 8px 0 rgb(0 0 0 / 0.08), 0 2px 4px 0 rgb(0 0 0 / 0.04);
+  --shadow-xl: 0 8px 16px 0 rgb(0 0 0 / 0.1), 0 4px 8px 0 rgb(0 0 0 / 0.06);
+  --shadow-2xl: 0 16px 32px 0 rgb(0 0 0 / 0.12), 0 8px 16px 0 rgb(0 0 0 / 0.08);
+  --shadow-inner: inset 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  
+  /* Vercel-style Special Shadows */
+  --shadow-border: 0 0 0 1px rgb(var(--geist-border));
+  --shadow-focus: 0 0 0 2px rgb(var(--vercel-blue) / 0.2);
+  --shadow-card: 0 2px 4px 0 rgb(0 0 0 / 0.04), 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-card-hover: 0 4px 8px 0 rgb(0 0 0 / 0.08), 0 2px 4px 0 rgb(0 0 0 / 0.06);
+
+  /* ===============================
+     VERCEL BORDER RADIUS - Subtle and Consistent
+  =============================== */
+  --radius-none: 0;
+  --radius-sm: 0.25rem;     /* 4px - Vercel's minimum */
+  --radius-base: 0.375rem;  /* 6px - Vercel's standard */
+  --radius-md: 0.5rem;      /* 8px - Medium elements */
+  --radius-lg: 0.75rem;     /* 12px - Cards and panels */
+  --radius-xl: 1rem;        /* 16px - Large components */
+  --radius-2xl: 1.5rem;     /* 24px - Hero sections */
+  --radius-full: 9999px;    /* Full round */
+
+  /* ===============================
+     Z-INDEX LAYERS
+  =============================== */
+  --z-0: 0;
+  --z-10: 10;
+  --z-20: 20;
+  --z-30: 30;
+  --z-40: 40;
+  --z-50: 50;
+  --z-modal: 1000;
+  --z-popover: 1010;
+  --z-tooltip: 1020;
+  --z-notification: 1030;
+
+  /* ===============================
+     ANIMATION & TRANSITIONS
+  =============================== */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+  
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* ===============================
+     COMPONENT SPECIFIC
+  =============================== */
+  
+  /* Focus Ring */
+  --focus-ring: 0 0 0 3px rgb(59 130 246 / 0.1);
+  --focus-ring-offset: 2px;
+  
+  /* Button Heights */
+  --btn-height-sm: 2rem;     /* 32px */
+  --btn-height-md: 2.5rem;   /* 40px */
+  --btn-height-lg: 3rem;     /* 48px */
+  --btn-height-xl: 3.5rem;   /* 56px */
+  
+  /* Input Heights */
+  --input-height-sm: 2rem;   /* 32px */
+  --input-height-md: 2.5rem; /* 40px */
+  --input-height-lg: 3rem;   /* 48px */
+}
+
+/* ===============================
+   VERCEL DARK MODE - Clean and Modern
+=============================== */
+:root.dark {
+  /* Vercel Dark Background Colors */
+  --geist-background: 0 0 0;              /* Pure black #000000 */
+  --geist-secondary: 26 26 26;            /* Dark gray #1a1a1a */
+  --geist-tertiary: 38 38 38;             /* Medium dark #262626 */
+  --geist-quaternary: 51 51 51;           /* Border dark #333333 */
+  --geist-overlay: 0 0 0 / 0.8;           /* Darker overlay */
+  
+  /* Update legacy variables */
+  --bg-primary: var(--geist-background);
+  --bg-secondary: var(--geist-secondary);
+  --bg-tertiary: var(--geist-tertiary);
+  --bg-quaternary: var(--geist-quaternary);
+  --bg-overlay: var(--geist-overlay);
+  
+  /* Vercel Dark Text Colors */
+  --geist-foreground: 255 255 255;        /* Pure white #ffffff */
+  --geist-secondary-text: 153 153 153;    /* Light gray #999999 */
+  --geist-tertiary-text: 119 119 119;     /* Medium gray #777777 */
+  --geist-quaternary-text: 85 85 85;      /* Dark gray #555555 */
+  --geist-inverse: 0 0 0;                 /* Black text */
+  
+  /* Update legacy text variables */
+  --text-primary: var(--geist-foreground);
+  --text-secondary: var(--geist-secondary-text);
+  --text-tertiary: var(--geist-tertiary-text);
+  --text-quaternary: var(--geist-quaternary-text);
+  --text-inverse: var(--geist-inverse);
+  
+  /* Vercel Dark Border Colors */
+  --geist-border: 51 51 51;               /* Dark border #333333 */
+  --geist-border-hover: 68 68 68;         /* Hover border #444444 */
+  --geist-border-focus: 0 112 243;        /* Same focus blue */
+  
+  /* Update legacy border variables */
+  --border-primary: var(--geist-border);
+  --border-secondary: var(--geist-border-hover);
+  --border-tertiary: var(--geist-tertiary-text);
+  --border-focus: var(--geist-border-focus);
+  
+  /* Vercel Dark Brand Colors */
+  --vercel-blue: 0 142 255;               /* Brighter blue for dark #008eff */
+  --vercel-blue-hover: 51 161 255;        /* Lighter hover #33a1ff */
+  --vercel-blue-light: 59 130 246;        /* Keep light blue */
+  --vercel-blue-pale: 15 23 42;           /* Dark blue background */
+  
+  /* Update legacy brand variables */
+  --color-primary: var(--vercel-blue);
+  --color-primary-hover: var(--vercel-blue-hover);
+  --color-primary-light: var(--vercel-blue-pale);
+  --color-primary-dark: var(--vercel-blue-light);
+  
+  /* Semantic Colors - Dark mode variants */
+  --color-success: 52 211 153;      /* emerald-400 */
+  --color-success-light: 6 78 59;   /* emerald-800 */
+  --color-success-dark: 110 231 183; /* emerald-300 */
+  
+  --color-warning: 251 191 36;      /* amber-400 */
+  --color-warning-light: 120 53 15; /* amber-800 */
+  --color-warning-dark: 252 211 77; /* amber-300 */
+  
+  --color-error: 248 113 113;       /* red-400 */
+  --color-error-light: 127 29 29;   /* red-800 */
+  --color-error-dark: 252 165 165;  /* red-300 */
+  
+  /* Enhanced Shadows for Dark Mode */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.6);
+  
+  --shadow-glow: 0 0 20px rgb(96 165 250 / 0.4);
+  --shadow-colored: 0 8px 32px rgb(96 165 250 / 0.15);
+}
+
+/* ===============================
+   VERCEL UTILITY CLASSES
+=============================== */
+
+/* Geist Color Utilities */
+.geist-bg { background-color: rgb(var(--geist-background)); }
+.geist-bg-secondary { background-color: rgb(var(--geist-secondary)); }
+.geist-bg-tertiary { background-color: rgb(var(--geist-tertiary)); }
+
+.geist-text { color: rgb(var(--geist-foreground)); }
+.geist-text-secondary { color: rgb(var(--geist-secondary-text)); }
+.geist-text-tertiary { color: rgb(var(--geist-tertiary-text)); }
+
+.geist-border { border-color: rgb(var(--geist-border)); }
+.geist-border-hover { border-color: rgb(var(--geist-border-hover)); }
+
+/* Hover states */
+.hover\:geist-text:hover { color: rgb(var(--geist-foreground)); }
+.hover\:geist-text-secondary:hover { color: rgb(var(--geist-secondary-text)); }
+.hover\:geist-bg-secondary:hover { background-color: rgb(var(--geist-secondary)); }
+
+/* Legacy Utilities for Compatibility */
+.bg-primary { background-color: rgb(var(--bg-primary)); }
+.bg-secondary { background-color: rgb(var(--bg-secondary)); }
+.bg-tertiary { background-color: rgb(var(--bg-tertiary)); }
+
+.text-primary { color: rgb(var(--text-primary)); }
+.text-secondary { color: rgb(var(--text-secondary)); }
+.text-tertiary { color: rgb(var(--text-tertiary)); }
+
+.border-primary { border-color: rgb(var(--border-primary)); }
+.border-secondary { border-color: rgb(var(--border-secondary)); }
+
+/* Vercel Focus Utilities */
+.geist-focus {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.focus-ring {
+  @apply focus:outline-none;
+  box-shadow: var(--shadow-focus);
+}
+
+.focus-ring-dark {
+  @apply focus:outline-none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* Responsive Design Breakpoints Reminder */
+/* sm: 640px */
+/* md: 768px */
+/* lg: 1024px */
+/* xl: 1280px */
+/* 2xl: 1536px */

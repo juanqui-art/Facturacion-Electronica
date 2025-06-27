@@ -1,0 +1,201 @@
+---
+export interface Props {
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search';
+  label?: string;
+  placeholder?: string;
+  value?: string;
+  required?: boolean;
+  disabled?: boolean;
+  error?: string;
+  helperText?: string;
+  variant?: 'default' | 'filled' | 'floating';
+  size?: 'sm' | 'md' | 'lg';
+  icon?: string;
+  id?: string;
+  name?: string;
+  class?: string;
+  'data-testid'?: string;
+}
+
+const {
+  type = 'text',
+  label,
+  placeholder,
+  value,
+  required = false,
+  disabled = false,
+  error,
+  helperText,
+  variant = 'default',
+  size = 'md',
+  icon,
+  id,
+  name,
+  class: className = '',
+  'data-testid': testId,
+  ...rest
+} = Astro.props;
+
+// Generate unique ID if not provided
+const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+
+// Base container classes
+const containerClasses = `
+  relative
+  ${className}
+`.replace(/\s+/g, ' ').trim();
+
+// Input base classes
+const baseInputClasses = `
+  w-full rounded-xl border transition-all duration-200 ease-out
+  focus:outline-none focus:ring-2 focus:ring-offset-1 dark:focus:ring-offset-gray-800
+  disabled:opacity-50 disabled:cursor-not-allowed
+  placeholder:text-gray-400 dark:placeholder:text-gray-500
+`.replace(/\s+/g, ' ').trim();
+
+// Size classes
+const sizeClasses = {
+  sm: 'px-3 py-2 text-sm',
+  md: 'px-4 py-3 text-sm',
+  lg: 'px-5 py-4 text-base'
+};
+
+// Variant classes
+const variantClasses = {
+  default: `
+    bg-white dark:bg-gray-800
+    border-gray-300 dark:border-gray-600
+    text-gray-900 dark:text-gray-100
+    focus:border-blue-500 dark:focus:border-blue-400
+    focus:ring-blue-500/20 dark:focus:ring-blue-400/20
+    hover:border-gray-400 dark:hover:border-gray-500
+  `,
+  filled: `
+    bg-gray-50 dark:bg-gray-700
+    border-gray-200 dark:border-gray-600
+    text-gray-900 dark:text-gray-100
+    focus:bg-white dark:focus:bg-gray-600
+    focus:border-blue-500 dark:focus:border-blue-400
+    focus:ring-blue-500/20 dark:focus:ring-blue-400/20
+    hover:bg-gray-100 dark:hover:bg-gray-600
+  `,
+  floating: `
+    bg-transparent border-0 border-b-2
+    border-gray-300 dark:border-gray-600
+    text-gray-900 dark:text-gray-100
+    focus:border-blue-500 dark:focus:border-blue-400
+    focus:ring-0 rounded-none px-0 pb-2
+  `
+};
+
+// Error state classes
+const errorClasses = error ? `
+  border-red-500 dark:border-red-400
+  focus:border-red-500 dark:focus:border-red-400
+  focus:ring-red-500/20 dark:focus:ring-red-400/20
+` : '';
+
+// Label classes
+const labelClasses = `
+  block text-sm font-medium mb-2 transition-colors duration-200
+  ${error ? 'text-red-700 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}
+  ${required ? "after:content-['*'] after:text-red-500 after:ml-1" : ''}
+`.replace(/\s+/g, ' ').trim();
+
+// Final input classes
+const inputClasses = `
+  ${baseInputClasses} 
+  ${sizeClasses[size]} 
+  ${variantClasses[variant]} 
+  ${errorClasses}
+  ${icon ? (size === 'sm' ? 'pl-9' : size === 'lg' ? 'pl-12' : 'pl-10') : ''}
+`.replace(/\s+/g, ' ').trim();
+---
+
+<div class={containerClasses}>
+  {label && variant !== 'floating' && (
+    <label for={inputId} class={labelClasses}>
+      {label}
+    </label>
+  )}
+  
+  <div class="relative">
+    {icon && (
+      <div class={`absolute inset-y-0 left-0 flex items-center ${size === 'sm' ? 'pl-3' : size === 'lg' ? 'pl-4' : 'pl-3.5'} pointer-events-none`}>
+        <div class={`${size === 'sm' ? 'h-4 w-4' : size === 'lg' ? 'h-6 w-6' : 'h-5 w-5'} text-gray-400 dark:text-gray-500`}>
+          <Fragment set:html={icon} />
+        </div>
+      </div>
+    )}
+    
+    <input
+      type={type}
+      id={inputId}
+      name={name || inputId}
+      class={inputClasses}
+      placeholder={placeholder}
+      value={value}
+      required={required}
+      disabled={disabled}
+      data-testid={testId}
+      {...rest}
+    />
+    
+    {variant === 'floating' && label && (
+      <label
+        for={inputId}
+        class={`
+          absolute left-0 top-3 text-gray-500 dark:text-gray-400 transition-all duration-200 pointer-events-none
+          peer-focus:-top-2 peer-focus:left-0 peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-focus:text-xs
+          peer-valid:-top-2 peer-valid:left-0 peer-valid:text-blue-600 dark:peer-valid:text-blue-400 peer-valid:text-xs
+          ${value ? '-top-2 left-0 text-blue-600 dark:text-blue-400 text-xs' : ''}
+          ${error ? 'text-red-500 dark:text-red-400 peer-focus:text-red-500 dark:peer-focus:text-red-400' : ''}
+        `.replace(/\s+/g, ' ').trim()}
+      >
+        {label}
+        {required && <span class="text-red-500 ml-1">*</span>}
+      </label>
+    )}
+    
+    {/* Success/Error Icons */}
+    <div class={`absolute inset-y-0 right-0 flex items-center ${size === 'sm' ? 'pr-3' : size === 'lg' ? 'pr-4' : 'pr-3.5'}`}>
+      {error && (
+        <svg class={`${size === 'sm' ? 'h-4 w-4' : size === 'lg' ? 'h-6 w-6' : 'h-5 w-5'} text-red-500`} fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+      )}
+    </div>
+  </div>
+  
+  {/* Helper Text or Error Message */}
+  {(error || helperText) && (
+    <div class={`mt-2 text-sm ${error ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
+      <div class="flex items-start gap-1">
+        {error && (
+          <svg class="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+        )}
+        <span>{error || helperText}</span>
+      </div>
+    </div>
+  )}
+</div>
+
+<style>
+  /* Custom peer utility for floating labels */
+  .peer:focus ~ label,
+  .peer:valid ~ label,
+  .peer:not(:placeholder-shown) ~ label {
+    @apply -top-2 left-0 text-xs;
+  }
+  
+  .peer:focus ~ label {
+    @apply text-blue-600 dark:text-blue-400;
+  }
+  
+  /* Error state for floating labels */
+  .peer.error:focus ~ label {
+    @apply text-red-500 dark:text-red-400;
+  }
+</style>

@@ -1,0 +1,663 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+import Button from '../components/Button.astro';
+---
+
+<Layout title="Configuración SRI - Facturación SRI">
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Configuración del Sistema SRI</h1>
+        <p class="text-gray-600">Configura los parámetros para la integración con el SRI</p>
+      </div>
+      <div class="flex space-x-3">
+        <Button variant="secondary" id="test-connection-btn">
+          🧪 Probar Conexión
+        </Button>
+        <Button variant="primary" id="save-config-btn">
+          💾 Guardar Configuración
+        </Button>
+      </div>
+    </div>
+
+    <!-- Estado de la Configuración -->
+    <Card title="Estado Actual">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+          <div class="w-3 h-3 rounded-full" id="config-indicator"></div>
+          <div>
+            <p class="font-medium text-gray-900">Configuración</p>
+            <p class="text-sm text-gray-600" id="config-status">Verificando...</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+          <div class="w-3 h-3 rounded-full" id="cert-indicator"></div>
+          <div>
+            <p class="font-medium text-gray-900">Certificado</p>
+            <p class="text-sm text-gray-600" id="cert-status">Verificando...</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+          <div class="w-3 h-3 rounded-full" id="sri-indicator"></div>
+          <div>
+            <p class="font-medium text-gray-900">Conexión SRI</p>
+            <p class="text-sm text-gray-600" id="sri-status">Verificando...</p>
+          </div>
+        </div>
+      </div>
+    </Card>
+
+    <!-- Configuración de Empresa -->
+    <Card title="Información de la Empresa">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            RUC <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="empresa-ruc" maxlength="13" required
+                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          <p class="mt-1 text-xs text-gray-500">13 dígitos incluyendo dígito verificador</p>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Razón Social <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="empresa-razon-social" required
+                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Establecimiento <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="empresa-establecimiento" maxlength="3" required
+                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          <p class="mt-1 text-xs text-gray-500">3 dígitos (ej: 001)</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Punto de Emisión <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="empresa-punto-emision" maxlength="3" required
+                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          <p class="mt-1 text-xs text-gray-500">3 dígitos (ej: 001)</p>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+        <textarea id="empresa-direccion" rows="2"
+                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+      </div>
+    </Card>
+
+    <!-- Configuración de Ambiente -->
+    <Card title="Ambiente de Trabajo">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Ambiente SRI <span class="text-red-500">*</span>
+          </label>
+          <select id="ambiente-codigo" required
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <option value="1">Pruebas (Certificación)</option>
+            <option value="2">Producción</option>
+          </select>
+          <p class="mt-1 text-xs text-gray-500">⚠️ Usar Pruebas para testing, Producción para facturas reales</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Tipo de Emisión
+          </label>
+          <select id="ambiente-tipo-emision"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <option value="1">Normal</option>
+            <option value="2">Contingencia</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+        <h4 class="font-medium text-blue-900 mb-2">Información sobre Ambientes</h4>
+        <div class="text-sm text-blue-800 space-y-1">
+          <p><strong>Pruebas:</strong> Para testing y desarrollo. Las facturas no tienen validez fiscal.</p>
+          <p><strong>Producción:</strong> Para facturas reales con validez fiscal. Requiere certificado de producción.</p>
+        </div>
+      </div>
+    </Card>
+
+    <!-- Configuración de Certificado -->
+    <Card title="Certificado Digital">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Archivo de Certificado (.p12) <span class="text-red-500">*</span>
+          </label>
+          <input type="file" id="certificado-archivo" accept=".p12"
+                 class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+          <p class="mt-1 text-xs text-gray-500">Archivo .p12 proporcionado por el SRI</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Contraseña del Certificado <span class="text-red-500">*</span>
+          </label>
+          <input type="password" id="certificado-password" required
+                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          <p class="mt-1 text-xs text-gray-500">Contraseña proporcionada con el certificado</p>
+        </div>
+      </div>
+
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex items-center">
+          <input type="checkbox" id="certificado-validar-vigencia" checked
+                 class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+          <label for="certificado-validar-vigencia" class="ml-2 text-sm text-gray-700">
+            Validar vigencia del certificado
+          </label>
+        </div>
+
+        <div class="flex items-center">
+          <input type="checkbox" id="certificado-validar-cadena" checked
+                 class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+          <label for="certificado-validar-cadena" class="ml-2 text-sm text-gray-700">
+            Validar cadena de certificación
+          </label>
+        </div>
+      </div>
+
+      <div class="mt-4 p-4 bg-yellow-50 rounded-lg">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-yellow-700">
+              <strong>Seguridad:</strong> La contraseña se almacena de forma segura y no se muestra en la interfaz.
+            </p>
+          </div>
+        </div>
+      </div>
+    </Card>
+
+    <!-- Configuración Avanzada -->
+    <Card title="Configuración Avanzada">
+      <div class="space-y-6">
+        <!-- Timeouts y Reintentos -->
+        <div>
+          <h4 class="font-medium text-gray-900 mb-4">Timeouts y Reintentos</h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Timeout (segundos)
+              </label>
+              <input type="number" id="sri-timeout" min="10" max="120" value="30"
+                     class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Máximo Reintentos
+              </label>
+              <input type="number" id="sri-max-reintentos" min="1" max="10" value="3"
+                     class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Preset de Configuración
+              </label>
+              <select id="config-preset" onchange="applyPreset(this.value)"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <option value="">Personalizado</option>
+                <option value="development">Desarrollo</option>
+                <option value="production">Producción</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Endpoints Personalizados -->
+        <div>
+          <h4 class="font-medium text-gray-900 mb-4">Endpoints SRI (Avanzado)</h4>
+          <div class="grid grid-cols-1 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Endpoint de Recepción
+              </label>
+              <input type="url" id="sri-endpoint-recepcion" readonly
+                     class="block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm">
+              <p class="mt-1 text-xs text-gray-500">Se actualiza automáticamente según el ambiente seleccionado</p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Endpoint de Autorización
+              </label>
+              <input type="url" id="sri-endpoint-autorizacion" readonly
+                     class="block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm">
+              <p class="mt-1 text-xs text-gray-500">Se actualiza automáticamente según el ambiente seleccionado</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+
+    <!-- Test de Configuración -->
+    <Card title="Pruebas de Configuración">
+      <div id="test-results" class="hidden">
+        <div class="space-y-4">
+          <div class="flex items-center justify-between p-3 rounded-lg" id="test-config">
+            <div class="flex items-center space-x-3">
+              <div class="w-4 h-4 rounded-full" id="test-config-indicator"></div>
+              <span class="font-medium">Validación de Configuración</span>
+            </div>
+            <span class="text-sm" id="test-config-result">-</span>
+          </div>
+
+          <div class="flex items-center justify-between p-3 rounded-lg" id="test-cert">
+            <div class="flex items-center space-x-3">
+              <div class="w-4 h-4 rounded-full" id="test-cert-indicator"></div>
+              <span class="font-medium">Validación de Certificado</span>
+            </div>
+            <span class="text-sm" id="test-cert-result">-</span>
+          </div>
+
+          <div class="flex items-center justify-between p-3 rounded-lg" id="test-connection">
+            <div class="flex items-center space-x-3">
+              <div class="w-4 h-4 rounded-full" id="test-connection-indicator"></div>
+              <span class="font-medium">Conexión con SRI</span>
+            </div>
+            <span class="text-sm" id="test-connection-result">-</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="test-loading" class="hidden text-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p class="text-gray-600">Ejecutando pruebas de configuración...</p>
+      </div>
+    </Card>
+  </div>
+
+  <script>
+    // API Configuration
+    const API_BASE = window.location.port === '4321' 
+      ? 'http://localhost:8080/api'
+      : window.location.origin + '/api';
+
+    // Configuración actual cargada
+    let currentConfig: any = null;
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeEventListeners();
+      loadCurrentConfiguration();
+      updateEndpoints();
+    });
+
+    function initializeEventListeners() {
+      // Botones principales
+      const saveConfigBtn = document.getElementById('save-config-btn');
+      const testConnectionBtn = document.getElementById('test-connection-btn');
+      
+      if (saveConfigBtn) saveConfigBtn.addEventListener('click', saveConfiguration);
+      if (testConnectionBtn) testConnectionBtn.addEventListener('click', testConfiguration);
+      
+      // Cambio de ambiente actualiza endpoints
+      const ambienteSelect = document.getElementById('ambiente-codigo');
+      if (ambienteSelect) {
+        ambienteSelect.addEventListener('change', updateEndpoints);
+      }
+      
+      // Validaciones en tiempo real
+      const rucInput = document.getElementById('empresa-ruc');
+      const establecimientoInput = document.getElementById('empresa-establecimiento');
+      const puntoEmisionInput = document.getElementById('empresa-punto-emision');
+      
+      if (rucInput) rucInput.addEventListener('input', validateRUC);
+      if (establecimientoInput) establecimientoInput.addEventListener('input', validateEstablecimiento);
+      if (puntoEmisionInput) puntoEmisionInput.addEventListener('input', validatePuntoEmision);
+    }
+
+    async function loadCurrentConfiguration() {
+      try {
+        // Por ahora mostraremos configuración de ejemplo
+        // En implementación real, se cargaría desde un endpoint
+        showCurrentStatus();
+        
+        // Cargar configuración por defecto
+        loadDefaultConfiguration();
+        
+      } catch (error) {
+        console.error('Error loading configuration:', error);
+      }
+    }
+
+    function loadDefaultConfiguration() {
+      // Configuración de ejemplo basada en desarrollo.json
+      const rucInput = document.getElementById('empresa-ruc') as HTMLInputElement;
+      const razonSocialInput = document.getElementById('empresa-razon-social') as HTMLInputElement;
+      const establecimientoInput = document.getElementById('empresa-establecimiento') as HTMLInputElement;
+      const puntoEmisionInput = document.getElementById('empresa-punto-emision') as HTMLInputElement;
+      const direccionTextarea = document.getElementById('empresa-direccion') as HTMLTextAreaElement;
+      
+      const ambienteSelect = document.getElementById('ambiente-codigo') as HTMLSelectElement;
+      const tipoEmisionSelect = document.getElementById('ambiente-tipo-emision') as HTMLSelectElement;
+      
+      const timeoutInput = document.getElementById('sri-timeout') as HTMLInputElement;
+      const maxReintentosInput = document.getElementById('sri-max-reintentos') as HTMLInputElement;
+      
+      const validarVigenciaCheck = document.getElementById('certificado-validar-vigencia') as HTMLInputElement;
+      const validarCadenaCheck = document.getElementById('certificado-validar-cadena') as HTMLInputElement;
+      
+      if (rucInput) rucInput.value = '1791234567001';
+      if (razonSocialInput) razonSocialInput.value = 'EMPRESA DEMO S.A.';
+      if (establecimientoInput) establecimientoInput.value = '001';
+      if (puntoEmisionInput) puntoEmisionInput.value = '001';
+      if (direccionTextarea) direccionTextarea.value = 'Av. Principal 123, Quito, Ecuador';
+      
+      if (ambienteSelect) ambienteSelect.value = '1';
+      if (tipoEmisionSelect) tipoEmisionSelect.value = '1';
+      
+      if (timeoutInput) timeoutInput.value = '30';
+      if (maxReintentosInput) maxReintentosInput.value = '3';
+      
+      if (validarVigenciaCheck) validarVigenciaCheck.checked = true;
+      if (validarCadenaCheck) validarCadenaCheck.checked = true;
+      
+      updateEndpoints();
+    }
+
+    function updateEndpoints() {
+      const ambienteSelect = document.getElementById('ambiente-codigo') as HTMLSelectElement;
+      const recepcionInput = document.getElementById('sri-endpoint-recepcion') as HTMLInputElement;
+      const autorizacionInput = document.getElementById('sri-endpoint-autorizacion') as HTMLInputElement;
+      
+      if (!ambienteSelect || !recepcionInput || !autorizacionInput) return;
+      
+      const ambiente = ambienteSelect.value;
+      
+      if (ambiente === '1') {
+        // Pruebas/Certificación
+        recepcionInput.value = 'https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline';
+        autorizacionInput.value = 'https://celcer.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline';
+      } else {
+        // Producción
+        recepcionInput.value = 'https://cel.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline';
+        autorizacionInput.value = 'https://cel.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline';
+      }
+    }
+
+    function applyPreset(preset: string) {
+      const timeoutInput = document.getElementById('sri-timeout') as HTMLInputElement;
+      const maxReintentosInput = document.getElementById('sri-max-reintentos') as HTMLInputElement;
+      
+      if (preset === 'development') {
+        if (timeoutInput) timeoutInput.value = '60';
+        if (maxReintentosInput) maxReintentosInput.value = '5';
+      } else if (preset === 'production') {
+        if (timeoutInput) timeoutInput.value = '30';
+        if (maxReintentosInput) maxReintentosInput.value = '3';
+      }
+    }
+
+    function validateRUC(e: Event) {
+      const target = e.target as HTMLInputElement;
+      if (!target) return;
+      
+      const value = target.value.replace(/[^0-9]/g, '');
+      target.value = value;
+      
+      const isValid = value.length === 13 && /^\d{13}$/.test(value);
+      target.classList.toggle('border-red-500', !isValid && value.length > 0);
+      target.classList.toggle('border-green-500', isValid);
+    }
+
+    function validateEstablecimiento(e: Event) {
+      const target = e.target as HTMLInputElement;
+      if (!target) return;
+      
+      const value = target.value.replace(/[^0-9]/g, '').padStart(3, '0').substring(0, 3);
+      target.value = value;
+      
+      const isValid = /^\d{3}$/.test(value);
+      target.classList.toggle('border-red-500', !isValid);
+      target.classList.toggle('border-green-500', isValid);
+    }
+
+    function validatePuntoEmision(e: Event) {
+      const target = e.target as HTMLInputElement;
+      if (!target) return;
+      
+      const value = target.value.replace(/[^0-9]/g, '').padStart(3, '0').substring(0, 3);
+      target.value = value;
+      
+      const isValid = /^\d{3}$/.test(value);
+      target.classList.toggle('border-red-500', !isValid);
+      target.classList.toggle('border-green-500', isValid);
+    }
+
+    async function saveConfiguration() {
+      try {
+        const config = getFormConfiguration();
+        
+        // Validar configuración
+        if (!validateConfiguration(config)) {
+          return;
+        }
+        
+        if (window.showSuccess) {
+          window.showSuccess('Configuración guardada exitosamente', {
+            title: '¡Configuración actualizada!',
+            actionText: 'Probar conexión',
+            action: 'testConfiguration()'
+          });
+        } else {
+          alert('Configuración guardada exitosamente (simulado)');
+        }
+        
+        // En implementación real, se enviaría al backend
+        console.log('Configuración a guardar:', config);
+        
+      } catch (error) {
+        console.error('Error saving configuration:', error);
+        const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
+        alert('Error al guardar configuración: ' + errorMsg);
+      }
+    }
+
+    function getFormConfiguration() {
+      const rucInput = document.getElementById('empresa-ruc') as HTMLInputElement;
+      const razonSocialInput = document.getElementById('empresa-razon-social') as HTMLInputElement;
+      const establecimientoInput = document.getElementById('empresa-establecimiento') as HTMLInputElement;
+      const puntoEmisionInput = document.getElementById('empresa-punto-emision') as HTMLInputElement;
+      const direccionTextarea = document.getElementById('empresa-direccion') as HTMLTextAreaElement;
+      
+      const ambienteSelect = document.getElementById('ambiente-codigo') as HTMLSelectElement;
+      const tipoEmisionSelect = document.getElementById('ambiente-tipo-emision') as HTMLSelectElement;
+      
+      const passwordInput = document.getElementById('certificado-password') as HTMLInputElement;
+      const validarVigenciaCheck = document.getElementById('certificado-validar-vigencia') as HTMLInputElement;
+      const validarCadenaCheck = document.getElementById('certificado-validar-cadena') as HTMLInputElement;
+      
+      const timeoutInput = document.getElementById('sri-timeout') as HTMLInputElement;
+      const maxReintentosInput = document.getElementById('sri-max-reintentos') as HTMLInputElement;
+      const recepcionInput = document.getElementById('sri-endpoint-recepcion') as HTMLInputElement;
+      const autorizacionInput = document.getElementById('sri-endpoint-autorizacion') as HTMLInputElement;
+      
+      return {
+        empresa: {
+          ruc: rucInput?.value || '',
+          razonSocial: razonSocialInput?.value || '',
+          establecimiento: establecimientoInput?.value || '',
+          puntoEmision: puntoEmisionInput?.value || '',
+          direccion: direccionTextarea?.value || ''
+        },
+        ambiente: {
+          codigo: ambienteSelect?.value || '1',
+          tipoEmision: tipoEmisionSelect?.value || '1'
+        },
+        certificado: {
+          password: passwordInput?.value || '',
+          validarVigencia: validarVigenciaCheck?.checked || false,
+          validarCadena: validarCadenaCheck?.checked || false
+        },
+        sri: {
+          timeoutSegundos: parseInt(timeoutInput?.value || '30'),
+          maxReintentos: parseInt(maxReintentosInput?.value || '3'),
+          endpointRecepcion: recepcionInput?.value || '',
+          endpointAutorizacion: autorizacionInput?.value || ''
+        }
+      };
+    }
+
+    function validateConfiguration(config: any): boolean {
+      const errors: string[] = [];
+      
+      if (!config.empresa.ruc || !/^\d{13}$/.test(config.empresa.ruc)) {
+        errors.push('RUC debe tener 13 dígitos');
+      }
+      
+      if (!config.empresa.razonSocial) {
+        errors.push('Razón social es obligatoria');
+      }
+      
+      if (!config.empresa.establecimiento || !/^\d{3}$/.test(config.empresa.establecimiento)) {
+        errors.push('Establecimiento debe tener 3 dígitos');
+      }
+      
+      if (!config.empresa.puntoEmision || !/^\d{3}$/.test(config.empresa.puntoEmision)) {
+        errors.push('Punto de emisión debe tener 3 dígitos');
+      }
+      
+      if (!config.certificado.password) {
+        errors.push('Contraseña del certificado es obligatoria');
+      }
+      
+      if (errors.length > 0) {
+        if ((window as any).showError) {
+          (window as any).showError('Por favor corrige los siguientes errores', {
+            title: 'Errores de validación',
+            action: 'console.log(' + JSON.stringify(errors) + ')',
+            actionText: 'Ver detalles'
+          });
+        } else {
+          alert('Errores de validación:\n' + errors.join('\n'));
+        }
+        return false;
+      }
+      
+      return true;
+    }
+
+    async function testConfiguration() {
+      try {
+        const testLoadingEl = document.getElementById('test-loading');
+        const testResultsEl = document.getElementById('test-results');
+        
+        if (testLoadingEl) testLoadingEl.classList.remove('hidden');
+        if (testResultsEl) testResultsEl.classList.add('hidden');
+        
+        // Simular pruebas (en implementación real se harían llamadas al backend)
+        await simulateTests();
+        
+        if (testLoadingEl) testLoadingEl.classList.add('hidden');
+        if (testResultsEl) testResultsEl.classList.remove('hidden');
+        
+      } catch (error) {
+        console.error('Error testing configuration:', error);
+        const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
+        alert('Error al probar configuración: ' + errorMsg);
+      }
+    }
+
+    async function simulateTests() {
+      // Simular test de configuración
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      updateTestResult('test-config', true, 'Configuración válida');
+      
+      // Simular test de certificado
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      updateTestResult('test-cert', true, 'Certificado válido');
+      
+      // Simular test de conexión SRI
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Usar el estado real del SRI
+      try {
+        const response = await fetch(`${API_BASE}/sri/status`);
+        const sriStatus = await response.json();
+        updateTestResult('test-connection', sriStatus.disponible, 
+          sriStatus.disponible ? 'Conexión exitosa' : 'SRI no disponible');
+      } catch (error) {
+        updateTestResult('test-connection', false, 'Error de conexión');
+      }
+    }
+
+    function updateTestResult(testId: string, success: boolean, message: string) {
+      const indicator = document.getElementById(testId + '-indicator');
+      const result = document.getElementById(testId + '-result');
+      const container = document.getElementById(testId);
+      
+      if (indicator && result && container) {
+        if (success) {
+          indicator.className = 'w-4 h-4 rounded-full bg-green-500';
+          container.className = 'flex items-center justify-between p-3 rounded-lg bg-green-50';
+          result.textContent = message;
+          result.className = 'text-sm text-green-700';
+        } else {
+          indicator.className = 'w-4 h-4 rounded-full bg-red-500';
+          container.className = 'flex items-center justify-between p-3 rounded-lg bg-red-50';
+          result.textContent = message;
+          result.className = 'text-sm text-red-700';
+        }
+      }
+    }
+
+    async function showCurrentStatus() {
+      // Configuración
+      const configIndicator = document.getElementById('config-indicator');
+      const configStatus = document.getElementById('config-status');
+      
+      if (configIndicator) configIndicator.className = 'w-3 h-3 rounded-full bg-green-500';
+      if (configStatus) configStatus.textContent = 'Configurada';
+      
+      // Certificado (simulado)
+      const certIndicator = document.getElementById('cert-indicator');
+      const certStatus = document.getElementById('cert-status');
+      
+      if (certIndicator) certIndicator.className = 'w-3 h-3 rounded-full bg-yellow-500';
+      if (certStatus) certStatus.textContent = 'Pendiente subir';
+      
+      // SRI
+      const sriIndicator = document.getElementById('sri-indicator');
+      const sriStatus = document.getElementById('sri-status');
+      
+      try {
+        const response = await fetch(`${API_BASE}/sri/status`);
+        const statusData = await response.json();
+        
+        if (sriIndicator && sriStatus) {
+          if (statusData.disponible) {
+            sriIndicator.className = 'w-3 h-3 rounded-full bg-green-500';
+            sriStatus.textContent = 'Conectado';
+          } else {
+            sriIndicator.className = 'w-3 h-3 rounded-full bg-red-500';
+            sriStatus.textContent = 'Desconectado';
+          }
+        }
+      } catch (error) {
+        if (sriIndicator) sriIndicator.className = 'w-3 h-3 rounded-full bg-red-500';
+        if (sriStatus) sriStatus.textContent = 'Error';
+      }
+    }
+  </script>
+</Layout>

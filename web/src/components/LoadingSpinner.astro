@@ -1,0 +1,17 @@
+---
+export interface Props {
+  size?: 'sm' | 'md' | 'lg';
+  class?: string;
+}
+
+const { size = 'md', class: className = "" } = Astro.props;
+
+const sizeClasses = {
+  sm: "h-4 w-4",
+  md: "h-6 w-6", 
+  lg: "h-8 w-8"
+};
+---
+
+<div class={`animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 ${sizeClasses[size]} ${className}`}>
+</div>

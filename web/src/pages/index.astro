@@ -1,0 +1,362 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+import Button from '../components/Button.astro';
+---
+
+<Layout title="Dashboard - Facturación SRI">
+    <div class="space-y-10">
+        <!-- Hero Section - Vercel Style -->
+        <section class="geist-bg-secondary border geist-border rounded-lg p-8">
+            <div class="max-w-4xl">
+                <h1 class="text-4xl font-bold geist-text mb-4">
+                    Bienvenido a tu Sistema SRI
+                </h1>
+                <p class="text-lg geist-text-secondary mb-8 max-w-3xl">
+                    Gestiona tu facturación electrónica con simplicidad y cumplimiento del SRI Ecuador.
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <Button variant="primary" size="lg">
+                        Nueva Factura
+                    </Button>
+                    <Button variant="secondary" size="lg">
+                        Ver Estadísticas
+                    </Button>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Stats Grid - Vercel Style -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Total Facturas -->
+        <Card variant="border">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-base geist-text-secondary">Total Facturas</p>
+                    <p class="text-3xl font-semibold geist-text mt-2" id="total-facturas">-</p>
+                    <p class="text-sm geist-text-tertiary mt-1">Este mes</p>
+                </div>
+                <div class="w-10 h-10 geist-bg-tertiary rounded-md flex items-center justify-center">
+                    <svg class="w-5 h-5 geist-text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+            </div>
+        </Card>
+
+        <!-- Autorizadas -->
+        <Card variant="border">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-base geist-text-secondary">Autorizadas</p>
+                    <p class="text-3xl font-semibold text-success mt-2" id="facturas-autorizadas">-</p>
+                </div>
+                <div class="w-10 h-10 bg-success-light rounded-md flex items-center justify-center">
+                    <svg class="h-5 w-5 text-success-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+            </div>
+        </Card>
+
+        <!-- Pendientes -->
+        <Card variant="border">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-base geist-text-secondary">Pendientes</p>
+                    <p class="text-3xl font-semibold text-warning mt-2" id="facturas-pendientes">-</p>
+                </div>
+                <div class="w-10 h-10 bg-warning-light rounded-md flex items-center justify-center">
+                    <svg class="h-5 w-5 text-warning-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </Card>
+    </div>
+
+    <!-- Quick Actions - Vercel Style -->
+    <Card title="Acciones Rápidas" variant="border">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="/facturas" class="group block p-4 geist-bg-secondary rounded-lg transition-all duration-200 ease-in-out hover:bg-gray-100 dark:hover:bg-gray-800 hover:shadow-md hover:-translate-y-1">
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 geist-bg-tertiary rounded-md flex items-center justify-center">
+                        <svg class="h-5 w-5 geist-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-medium geist-text">Nueva Factura</h3>
+                        <p class="text-sm geist-text-tertiary">Crear comprobante</p>
+                    </div>
+                </div>
+            </a>
+
+            <a href="/clientes" class="group block p-4 geist-bg-secondary rounded-lg transition-all duration-200 ease-in-out hover:bg-gray-100 dark:hover:bg-gray-800 hover:shadow-md hover:-translate-y-1">
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 geist-bg-tertiary rounded-md flex items-center justify-center">
+                        <svg class="h-5 w-5 geist-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-medium geist-text">Nuevo Cliente</h3>
+                        <p class="text-sm geist-text-tertiary">Gestionar clientes</p>
+                    </div>
+                </div>
+            </a>
+
+            <a href="/estadisticas" class="group block p-4 geist-bg-secondary rounded-lg transition-all duration-200 ease-in-out hover:bg-gray-100 dark:hover:bg-gray-800 hover:shadow-md hover:-translate-y-1">
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 geist-bg-tertiary rounded-md flex items-center justify-center">
+                        <svg class="h-5 w-5 geist-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-medium geist-text">Ver Reportes</h3>
+                        <p class="text-sm geist-text-tertiary">Análisis y métricas</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </Card>
+
+    <!-- Recent Activity - Vercel Style -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Facturas Recientes -->
+        <Card title="Facturas Recientes" variant="border">
+            <div id="facturas-recientes" class="space-y-3">
+                <div class="flex items-center justify-center py-8 geist-text-tertiary">
+                    <div class="text-center">
+                        <div class="animate-spin rounded-full h-6 w-6 border-2 border-gray-200 dark:border-gray-700 border-t-gray-600 dark:border-t-gray-400 mx-auto mb-3"></div>
+                        <p class="text-sm">Cargando facturas...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t geist-border">
+                <Button variant="ghost" size="sm">
+                    Ver todas →
+                </Button>
+            </div>
+        </Card>
+
+        <!-- Estado del SRI -->
+        <Card title="Estado del SRI" variant="border">
+            <div id="sri-status" class="space-y-4">
+                <div class="flex items-center justify-center py-8 geist-text-tertiary">
+                    <div class="text-center">
+                        <div class="animate-pulse rounded-full h-2 w-2 bg-gray-400 mx-auto mb-3"></div>
+                        <p class="text-sm">Verificando estado...</p>
+                    </div>
+                </div>
+            </div>
+        </Card>
+    </div>
+</Layout>
+
+
+    <script type="module">
+        // Importar el cliente API optimizado
+        import { api } from '../lib/api.js';
+        import { handleApiResponse } from '../lib/notifications.js';
+        import { notifications } from '../lib/notifications.js';
+
+        // Estado de la aplicación
+        let dashboardState = {
+            loading: false,
+            lastUpdate: null,
+            retryCount: 0
+        };
+
+        // Load dashboard data con manejo mejorado de errores
+        async function loadDashboardData() {
+            if (dashboardState.loading) return;
+            
+            dashboardState.loading = true;
+            updateLoadingStates(true);
+
+            try {
+                // Cargar datos en paralelo para mejor performance
+                const [statsResult, invoicesResult, sriResult] = await Promise.allSettled([
+                    api.getEstadisticas(),
+                    api.getFacturas(5),
+                    api.getSriStatus()
+                ]);
+
+                // Procesar estadísticas
+                if (statsResult.status === 'fulfilled') {
+                    const stats = handleApiResponse(statsResult.value);
+                    if (stats) updateStats(stats);
+                } else {
+                    notifications.error('Error al cargar estadísticas');
+                }
+
+                // Procesar facturas recientes
+                if (invoicesResult.status === 'fulfilled') {
+                    const invoicesData = handleApiResponse(invoicesResult.value);
+                    if (invoicesData) {
+                        updateRecentInvoices(invoicesData.facturas || []);
+                    }
+                } else {
+                    notifications.error('Error al cargar facturas recientes');
+                }
+
+                // Procesar estado SRI
+                if (sriResult.status === 'fulfilled') {
+                    const sriData = handleApiResponse(sriResult.value);
+                    if (sriData) {
+                        updateSRIStatus(sriData);
+                    }
+                } else {
+                    updateSRIStatus({
+                        disponible: false,
+                        mensaje: "Error al verificar estado del SRI",
+                        timestamp: new Date().toISOString()
+                    });
+                }
+
+                dashboardState.lastUpdate = new Date();
+                dashboardState.retryCount = 0;
+                
+                // Mostrar notificación de éxito solo si es una recarga manual
+                if (dashboardState.retryCount === 0) {
+                    notifications.success('Dashboard actualizado');
+                }
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                dashboardState.retryCount++;
+                
+                if (dashboardState.retryCount < 3) {
+                    // Retry con backoff exponencial
+                    setTimeout(() => {
+                        loadDashboardData();
+                    }, Math.pow(2, dashboardState.retryCount) * 1000);
+                    
+                    notifications.warning(`Reintentando carga de datos (${dashboardState.retryCount}/3)`);
+                } else {
+                    notifications.error('Error persistente cargando datos del dashboard');
+                }
+            } finally {
+                dashboardState.loading = false;
+                updateLoadingStates(false);
+            }
+        }
+
+        // Actualizar estados de carga en la UI
+        function updateLoadingStates(loading) {
+            const elements = [
+                'total-facturas',
+                'facturas-autorizadas', 
+                'facturas-pendientes',
+                'facturas-recientes',
+                'sri-status'
+            ];
+
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    if (loading) {
+                        element.style.opacity = '0.6';
+                        element.style.pointerEvents = 'none';
+                    } else {
+                        element.style.opacity = '1';
+                        element.style.pointerEvents = 'auto';
+                    }
+                }
+            });
+        }
+
+        function updateStats(stats) {
+            document.getElementById('total-facturas').textContent = stats.total_facturas || '0';
+            document.getElementById('facturas-autorizadas').textContent = stats.autorizadas || '0';
+            document.getElementById('facturas-pendientes').textContent = stats.pendientes || '0';
+            document.getElementById('facturas-rechazadas').textContent = stats.rechazadas || '0';
+        }
+
+        function updateRecentInvoices(invoices) {
+            const container = document.getElementById('facturas-recientes');
+
+            if (!invoices || invoices.length === 0) {
+                container.innerHTML = `
+          <div class="text-center py-6 text-gray-500">
+            <p>No hay facturas recientes</p>
+          </div>
+        `;
+                return;
+            }
+
+            container.innerHTML = invoices.slice(0, 5).map(invoice => `
+        <div class="flex items-center justify-between p-3 geist-bg-secondary rounded-lg">
+          <div>
+            <p class="font-medium geist-text">${invoice.clienteNombre || 'Sin nombre'}</p>
+            <p class="text-sm geist-text-tertiary">Factura #${invoice.numeroFactura || 'N/A'}</p>
+          </div>
+          <div class="text-right">
+            <p class="font-medium geist-text">${invoice.total || '0.00'}</p>
+            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-md ${getStatusColor(invoice.estado)}">
+              ${invoice.estado || 'BORRADOR'}
+            </span>
+          </div>
+        </div>
+      `).join('');
+        }
+
+        function updateSRIStatus(status) {
+            const container = document.getElementById('sri-status');
+            const isOnline = status && status.disponible;
+
+            container.innerHTML = `
+        <div class="flex items-center space-x-3">
+          <div class="w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}"></div>
+          <span class="font-medium ${isOnline ? 'text-green-700' : 'text-red-700'}">
+            ${isOnline ? 'Servicio Disponible' : 'Servicio No Disponible'}
+          </span>
+        </div>
+        <div class="mt-3 text-sm text-gray-600">
+          <p>Última verificación: ${status?.timestamp ? new Date(status.timestamp).toLocaleString() : new Date().toLocaleString()}</p>
+          ${status?.ambiente ? `<p class="mt-1">Ambiente: ${status.ambiente}</p>` : ''}
+          ${status?.mensaje ? `<p class="mt-1">${status.mensaje}</p>` : ''}
+        </div>
+      `;
+        }
+
+        function getStatusColor(status: string): string {
+            switch (status?.toUpperCase()) {
+                case 'AUTORIZADA':
+                    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400';
+                case 'ENVIADA':
+                    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400';
+                case 'RECHAZADA':
+                    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400';
+                case 'BORRADOR':
+                default:
+                    return 'geist-bg-tertiary geist-text-secondary';
+            }
+        }
+
+        function showError(message: string) {
+            // Simple error notification - could be enhanced with a proper notification system
+            console.error(message);
+        }
+
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', loadDashboardData);
+
+        // Refresh data every 5 minutes
+        setInterval(loadDashboardData, 5 * 60 * 1000);
+    </script>
+</Layout>
+
+<style>
+    .text-success { color: rgb(var(--color-success)); }
+    .bg-success-light { background-color: rgb(var(--color-success-light)); }
+    .text-success-dark { color: rgb(var(--color-success-dark)); }
+
+    .text-warning { color: rgb(var(--color-warning)); }
+    .bg-warning-light { background-color: rgb(var(--color-warning-light)); }
+    .text-warning-dark { color: rgb(var(--color-warning-dark)); }
+</style>

@@ -1,0 +1,85 @@
+---
+export interface Props {
+  title?: string;
+  subtitle?: string;
+  variant?: 'default' | 'minimal' | 'border' | 'elevated' | 'glass';
+  hover?: boolean;
+  class?: string;
+  id?: string;
+  'data-testid'?: string;
+}
+
+const { 
+  title, 
+  subtitle,
+  variant = 'default',
+  hover = true,
+  class: className = "",
+  id,
+  'data-testid': testId,
+  ...rest
+} = Astro.props;
+
+// Vercel-style base classes - clean and minimal
+const baseClasses = `
+  relative transition-all duration-200 ease-out
+  ${hover ? 'hover:scale-[1.01]' : ''}
+`.replace(/\s+/g, ' ').trim();
+
+// Vercel-style variant classes - clean and minimal
+const variantClasses = {
+  default: `
+    geist-bg border geist-border
+    rounded-lg p-4
+    ${hover ? 'hover:shadow-card hover:geist-border-hover' : ''}
+  `,
+  minimal: `
+    geist-bg-secondary
+    rounded-lg p-4
+    ${hover ? 'hover:geist-bg-tertiary' : ''}
+  `,
+  border: `
+    geist-bg border geist-border
+    rounded-lg p-4
+    ${hover ? 'hover:shadow-card-hover hover:geist-border-hover' : ''}
+  `,
+  elevated: `
+    geist-bg border geist-border
+    rounded-lg p-4 shadow-card
+    ${hover ? 'hover:shadow-card-hover hover:geist-border-hover' : ''}
+  `,
+  glass: `
+    bg-white/80 dark:bg-black/80 backdrop-blur-sm border geist-border
+    rounded-lg p-4
+    ${hover ? 'hover:bg-white/90 dark:hover:bg-black/90 hover:shadow-card' : ''}
+  `
+};
+
+const classes = `${baseClasses} ${variantClasses[variant]} ${className}`.replace(/\s+/g, ' ').trim();
+---
+
+<div 
+  class={classes}
+  id={id}
+  data-testid={testId}
+  {...rest}
+>
+  {(title || subtitle) && (
+    <div class="mb-4">
+      {title && (
+        <h3 class="text-lg font-semibold geist-text mb-1">
+          {title}
+        </h3>
+      )}
+      {subtitle && (
+        <p class="text-sm geist-text-secondary">
+          {subtitle}
+        </p>
+      )}
+    </div>
+  )}
+  
+  <div class="relative">
+    <slot />
+  </div>
+</div>

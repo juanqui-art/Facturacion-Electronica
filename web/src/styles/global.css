@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* Ensure body has no default spacing */
+body {
+  margin: 0;
+  padding: 0;
+}
+

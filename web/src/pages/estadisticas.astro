@@ -1,0 +1,481 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+import Button from '../components/Button.astro';
+---
+
+<Layout title="Estadísticas - Facturación SRI">
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Estadísticas y Reportes</h1>
+        <p class="text-gray-600">Análisis completo de tu facturación electrónica</p>
+      </div>
+      <div class="flex space-x-3">
+        <Button variant="secondary" id="refresh-btn">
+          🔄 Actualizar
+        </Button>
+        <Button variant="primary" id="export-btn">
+          📊 Exportar Reporte
+        </Button>
+      </div>
+    </div>
+
+    <!-- Métricas Principales -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <Card class="text-center bg-gradient-to-br from-blue-50 to-blue-100">
+        <div class="text-3xl font-bold text-blue-600 mb-2" id="total-facturas">-</div>
+        <p class="text-gray-700 font-medium">Total Facturas</p>
+        <p class="text-xs text-gray-500 mt-1">Todas las facturas registradas</p>
+      </Card>
+      
+      <Card class="text-center bg-gradient-to-br from-green-50 to-green-100">
+        <div class="text-3xl font-bold text-green-600 mb-2" id="total-facturado">$0.00</div>
+        <p class="text-gray-700 font-medium">Total Facturado</p>
+        <p class="text-xs text-gray-500 mt-1">Solo facturas autorizadas</p>
+      </Card>
+      
+      <Card class="text-center bg-gradient-to-br from-purple-50 to-purple-100">
+        <div class="text-3xl font-bold text-purple-600 mb-2" id="facturas-autorizadas">-</div>
+        <p class="text-gray-700 font-medium">Autorizadas</p>
+        <p class="text-xs text-gray-500 mt-1">Aprobadas por el SRI</p>
+      </Card>
+      
+      <Card class="text-center bg-gradient-to-br from-orange-50 to-orange-100">
+        <div class="text-3xl font-bold text-orange-600 mb-2" id="promedio-factura">$0.00</div>
+        <p class="text-gray-700 font-medium">Promedio x Factura</p>
+        <p class="text-xs text-gray-500 mt-1">Monto promedio autorizado</p>
+      </Card>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Gráfico de Estados -->
+      <Card title="Distribución por Estado">
+        <div class="h-64 flex items-center justify-center" id="chart-estados-container">
+          <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">Cargando gráfico...</p>
+          </div>
+        </div>
+        <canvas id="chart-estados" class="hidden" width="400" height="200"></canvas>
+      </Card>
+
+      <!-- Estadísticas Detalladas -->
+      <Card title="Desglose por Estado">
+        <div id="estados-loading" class="h-64 flex items-center justify-center">
+          <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">Cargando datos...</p>
+          </div>
+        </div>
+        <div id="estados-content" class="hidden space-y-4">
+          <!-- Los datos se cargarán aquí -->
+        </div>
+      </Card>
+    </div>
+
+    <!-- Tabla de Resumen -->
+    <Card title="Resumen Detallado">
+      <div id="resumen-loading" class="flex items-center justify-center py-8">
+        <div class="text-center">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p class="text-gray-600">Cargando resumen...</p>
+        </div>
+      </div>
+      
+      <div id="resumen-content" class="hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 class="font-semibold text-gray-900 mb-3">Indicadores Clave</h4>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Tasa de Autorización:</span>
+                <span class="font-medium" id="tasa-autorizacion">-%</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Facturas Pendientes:</span>
+                <span class="font-medium" id="facturas-pendientes">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Facturas Rechazadas:</span>
+                <span class="font-medium" id="facturas-rechazadas">-</span>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <h4 class="font-semibold text-gray-900 mb-3">Estado del Sistema</h4>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Última Actualización:</span>
+                <span class="font-medium" id="ultima-actualizacion">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Estado SRI:</span>
+                <span class="font-medium flex items-center">
+                  <div class="w-2 h-2 rounded-full mr-2" id="estado-sri-indicator"></div>
+                  <span id="estado-sri-text">Verificando...</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="resumen-error" class="hidden text-center py-8">
+        <div class="text-red-600">
+          <p class="font-medium">Error al cargar estadísticas</p>
+          <p class="text-sm">Por favor, intenta nuevamente</p>
+        </div>
+        <Button variant="primary" class="mt-4" onclick="loadStatistics()">
+          🔄 Reintentar
+        </Button>
+      </div>
+    </Card>
+  </div>
+
+  <!-- Script para Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+
+  <script>
+    // API Configuration
+    const API_BASE = window.location.port === '4321' 
+      ? 'http://localhost:8080/api'
+      : window.location.origin + '/api';
+    
+    let chartEstados: Chart | null = null;
+    let currentStats: any = null;
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeEventListeners();
+      loadStatistics();
+    });
+
+    function initializeEventListeners() {
+      const refreshBtn = document.getElementById('refresh-btn');
+      const exportBtn = document.getElementById('export-btn');
+      
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', loadStatistics);
+      }
+      if (exportBtn) {
+        exportBtn.addEventListener('click', exportReport);
+      }
+    }
+
+    async function loadStatistics() {
+      try {
+        showLoading();
+        
+        // Cargar estadísticas principales
+        const statsResponse = await fetch(`${API_BASE}/estadisticas`);
+        if (!statsResponse.ok) {
+          throw new Error(`Error ${statsResponse.status}`);
+        }
+        
+        const statsResult = await statsResponse.json();
+        if (!statsResult.success) {
+          throw new Error('Error en respuesta de estadísticas');
+        }
+        
+        currentStats = statsResult.data;
+        console.log('Estadísticas cargadas:', currentStats);
+        
+        // Cargar estado del SRI
+        const sriResponse = await fetch(`${API_BASE}/sri/status`);
+        let sriStatus = { disponible: false, mensaje: 'No disponible' };
+        if (sriResponse.ok) {
+          sriStatus = await sriResponse.json();
+        }
+        
+        // Actualizar UI
+        updateMetrics(currentStats);
+        updateChart(currentStats);
+        updateDetailedStats(currentStats);
+        updateSummary(currentStats, sriStatus);
+        showContent();
+        
+      } catch (error) {
+        console.error('Error loading statistics:', error);
+        showError();
+      }
+    }
+
+    function updateMetrics(stats: any) {
+      // Métricas principales
+      const totalFacturasEl = document.getElementById('total-facturas');
+      const totalFacturadoEl = document.getElementById('total-facturado');
+      const facturasAutorizadasEl = document.getElementById('facturas-autorizadas');
+      const promedioFacturaEl = document.getElementById('promedio-factura');
+      
+      if (totalFacturasEl) {
+        totalFacturasEl.textContent = String(stats.total_facturas || 0);
+      }
+      if (totalFacturadoEl) {
+        totalFacturadoEl.textContent = formatMoney(stats.total_facturado || 0);
+      }
+      
+      const autorizadas = stats.por_estado?.AUTORIZADA || 0;
+      if (facturasAutorizadasEl) {
+        facturasAutorizadasEl.textContent = String(autorizadas);
+      }
+      
+      // Calcular promedio
+      const promedio = autorizadas > 0 ? (stats.total_facturado || 0) / autorizadas : 0;
+      if (promedioFacturaEl) {
+        promedioFacturaEl.textContent = formatMoney(promedio);
+      }
+    }
+
+    function updateChart(stats: any) {
+      const container = document.getElementById('chart-estados-container');
+      const canvas = document.getElementById('chart-estados') as HTMLCanvasElement;
+      
+      if (!container || !canvas || !stats.por_estado) {
+        if (container) {
+          container.innerHTML = '<p class="text-gray-500 text-center">No hay datos para mostrar</p>';
+        }
+        return;
+      }
+      
+      // Preparar datos para el gráfico
+      const estados = stats.por_estado;
+      const labels = [];
+      const data = [];
+      const colors = [];
+      
+      const estadoConfig = {
+        'BORRADOR': { label: 'Borrador', color: '#9CA3AF' },
+        'ENVIADA': { label: 'Enviada', color: '#3B82F6' },
+        'AUTORIZADA': { label: 'Autorizada', color: '#10B981' },
+        'RECHAZADA': { label: 'Rechazada', color: '#EF4444' }
+      };
+      
+      Object.keys(estados).forEach(estado => {
+        if (estados[estado] > 0) {
+          const config = estadoConfig[estado] || { label: estado, color: '#6B7280' };
+          labels.push(config.label);
+          data.push(estados[estado]);
+          colors.push(config.color);
+        }
+      });
+      
+      if (data.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center">No hay facturas para mostrar</p>';
+        return;
+      }
+      
+      // Mostrar canvas y ocultar loading
+      container.classList.add('hidden');
+      canvas.classList.remove('hidden');
+      
+      // Destruir gráfico anterior si existe
+      if (chartEstados) {
+        chartEstados.destroy();
+      }
+      
+      // Crear nuevo gráfico
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      chartEstados = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: colors,
+            borderColor: colors.map(color => color),
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 20,
+                usePointStyle: true
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateDetailedStats(stats: any) {
+      const container = document.getElementById('estados-content');
+      const loadingEl = document.getElementById('estados-loading');
+      
+      if (!container || !loadingEl) return;
+      
+      const estados = stats.por_estado || {};
+      const total = stats.total_facturas || 0;
+      
+      const estadoConfig = {
+        'BORRADOR': { label: 'Borrador', color: 'gray', icon: '📄' },
+        'ENVIADA': { label: 'Enviada', color: 'blue', icon: '📤' },
+        'AUTORIZADA': { label: 'Autorizada', color: 'green', icon: '✅' },
+        'RECHAZADA': { label: 'Rechazada', color: 'red', icon: '❌' }
+      };
+      
+      let html = '';
+      Object.keys(estadoConfig).forEach(estado => {
+        const config = estadoConfig[estado];
+        const count = estados[estado] || 0;
+        const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+        
+        html += `
+          <div class="flex items-center justify-between p-3 bg-${config.color}-50 rounded-lg">
+            <div class="flex items-center space-x-3">
+              <span class="text-2xl">${config.icon}</span>
+              <div>
+                <p class="font-medium text-${config.color}-900">${config.label}</p>
+                <p class="text-sm text-${config.color}-700">${percentage}% del total</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-2xl font-bold text-${config.color}-700">${count}</p>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+      loadingEl.classList.add('hidden');
+      container.classList.remove('hidden');
+    }
+
+    function updateSummary(stats: any, sriStatus: any) {
+      const total = stats.total_facturas || 0;
+      const autorizadas = stats.por_estado?.AUTORIZADA || 0;
+      const rechazadas = stats.por_estado?.RECHAZADA || 0;
+      const pendientes = (stats.por_estado?.BORRADOR || 0) + (stats.por_estado?.ENVIADA || 0);
+      
+      // Calcular tasa de autorización
+      const tasaAutorizacion = total > 0 ? ((autorizadas / total) * 100).toFixed(1) : '0';
+      
+      // Actualizar indicadores
+      const tasaEl = document.getElementById('tasa-autorizacion');
+      const pendientesEl = document.getElementById('facturas-pendientes');
+      const rechazadasEl = document.getElementById('facturas-rechazadas');
+      const actualizacionEl = document.getElementById('ultima-actualizacion');
+      
+      if (tasaEl) tasaEl.textContent = `${tasaAutorizacion}%`;
+      if (pendientesEl) pendientesEl.textContent = String(pendientes);
+      if (rechazadasEl) rechazadasEl.textContent = String(rechazadas);
+      if (actualizacionEl) actualizacionEl.textContent = new Date().toLocaleString();
+      
+      // Estado SRI
+      const sriIndicator = document.getElementById('estado-sri-indicator');
+      const sriText = document.getElementById('estado-sri-text');
+      
+      if (sriIndicator && sriText) {
+        if (sriStatus.disponible) {
+          sriIndicator.className = 'w-2 h-2 rounded-full mr-2 bg-green-500';
+          sriText.textContent = 'Operativo';
+        } else {
+          sriIndicator.className = 'w-2 h-2 rounded-full mr-2 bg-red-500';
+          sriText.textContent = 'No disponible';
+        }
+      }
+    }
+
+    function formatMoney(amount: number): string {
+      return new Intl.NumberFormat('es-EC', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2
+      }).format(amount);
+    }
+
+    function exportReport() {
+      if (!currentStats) {
+        if (window.showWarning) {
+          window.showWarning('No hay datos para exportar', {
+            title: 'Sin datos',
+            actionText: 'Cargar datos',
+            action: 'loadStatistics()'
+          });
+        } else {
+          alert('No hay datos para exportar. Por favor, carga las estadísticas primero.');
+        }
+        return;
+      }
+      
+      // Generar reporte simple (posteriormente se puede mejorar con PDF)
+      const reportData = {
+        fecha: new Date().toISOString(),
+        estadisticas: currentStats,
+        resumen: {
+          total_facturas: currentStats.total_facturas,
+          total_facturado: currentStats.total_facturado,
+          tasa_autorizacion: currentStats.total_facturas > 0 
+            ? ((currentStats.por_estado?.AUTORIZADA || 0) / currentStats.total_facturas * 100).toFixed(1)
+            : 0
+        }
+      };
+      
+      // Descargar como JSON (posteriormente se puede mejorar)
+      const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reporte-estadisticas-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      if (window.showSuccess) {
+        window.showSuccess('Reporte exportado exitosamente', {
+          title: '¡Descarga completa!',
+          actionText: 'Abrir carpeta',
+          action: 'console.log("Abrir carpeta de descargas")'
+        });
+      } else {
+        alert('Reporte exportado exitosamente');
+      }
+    }
+
+    // UI State Management
+    function showLoading() {
+      const resumenLoading = document.getElementById('resumen-loading');
+      const resumenContent = document.getElementById('resumen-content');
+      const resumenError = document.getElementById('resumen-error');
+      const estadosLoading = document.getElementById('estados-loading');
+      const estadosContent = document.getElementById('estados-content');
+      
+      if (resumenLoading) resumenLoading.classList.remove('hidden');
+      if (resumenContent) resumenContent.classList.add('hidden');
+      if (resumenError) resumenError.classList.add('hidden');
+      if (estadosLoading) estadosLoading.classList.remove('hidden');
+      if (estadosContent) estadosContent.classList.add('hidden');
+    }
+
+    function showContent() {
+      const resumenLoading = document.getElementById('resumen-loading');
+      const resumenContent = document.getElementById('resumen-content');
+      const resumenError = document.getElementById('resumen-error');
+      
+      if (resumenLoading) resumenLoading.classList.add('hidden');
+      if (resumenContent) resumenContent.classList.remove('hidden');
+      if (resumenError) resumenError.classList.add('hidden');
+    }
+
+    function showError() {
+      const resumenLoading = document.getElementById('resumen-loading');
+      const resumenContent = document.getElementById('resumen-content');
+      const resumenError = document.getElementById('resumen-error');
+      
+      if (resumenLoading) resumenLoading.classList.add('hidden');
+      if (resumenContent) resumenContent.classList.add('hidden');
+      if (resumenError) resumenError.classList.remove('hidden');
+    }
+  </script>
+</Layout>

@@ -1,0 +1,172 @@
+---
+import Toast from '../components/Toast.astro';
+
+export interface Props {
+    title: string;
+    description?: string;
+}
+
+const {title, description = "Sistema de Facturación Electrónica SRI"} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="description" content={description}/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+    <title>{title}</title>
+
+    <!-- Auto Theme Detection - Respeta preferencias del sistema -->
+    <script is:inline>
+      // AUTO THEME MANAGER - Integrado en Layout
+      (function() {
+        function applySystemTheme() {
+          const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+          
+          return isDark ? 'dark' : 'light';
+        }
+        
+        // Aplicar tema inicial inmediatamente
+        const currentTheme = applySystemTheme();
+        
+        // Escuchar cambios del sistema en tiempo real
+        if (window.matchMedia) {
+          window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            document.documentElement.classList.add('theme-transitioning');
+            
+            if (e.matches) {
+              document.documentElement.classList.add('dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+            }
+            
+            setTimeout(() => {
+              document.documentElement.classList.remove('theme-transitioning');
+            }, 200);
+          });
+        }
+      })();
+    </script>
+    
+    <style>
+      /* Transiciones suaves para cambios de tema */
+      .theme-transitioning * {
+        transition: background-color 0.2s ease-out, border-color 0.2s ease-out, color 0.2s ease-out !important;
+      }
+    </style>
+
+    <!-- Tipografía Geist (Vercel's font) -->
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"
+          rel="stylesheet"/>
+
+    <style>
+        @import "../styles/design-tokens.css";
+        @import "../styles/global.css";
+    </style>
+</head>
+<body class="bg-white dark:bg-black text-black dark:text-white transition-colors duration-300 font-[Geist,sans-serif]">
+<div class="min-h-screen flex flex-col w-full">
+
+    <!-- Header - Vercel Style -->
+    <header class="bg-stone-50 dark:bg-black border-b border-stone-200 dark:border-stone-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-14">
+                <div>
+                    <h1 class="text-lg font-semibold text-black dark:text-white">
+                        Facturación SRI
+                    </h1>
+                </div>
+
+                <!-- Navigation + Theme -->
+                <div class="flex items-center gap-12 relative">
+                    <!-- Navegación Desktop - Vercel Style -->
+                    <nav class="hidden md:flex gap-1">
+                        {["Dashboard", "Facturas", "Clientes", "Estadisticas", "Configuracion"].map((item) => (
+                                <a
+                                        href={`/${item === "Dashboard" ? "" : item.toLowerCase()}`}
+                                        class="font-extralight px-6 py-1.5 text-sm  text-stone-600 dark:text-stone-400 hover:text-stone-950 dark:hover:text-stone-100 rounded-md hover:bg-stone-100 dark:hover:bg-stone-800 transition-all duration-200"
+                                >
+                                    {item}
+                                </a>
+                        ))}
+                    </nav>
+
+                    <!-- Auto theme - no manual toggle needed -->
+
+                    <!-- Botón Mobile - Vercel Style -->
+                    <button
+                            id="mobile-menu-button"
+                            class="md:hidden p-2 rounded-md text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                        <svg class="h-6 w-6"  viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Mobile menu - Vercel Style -->
+        <div id="mobile-menu"
+             class="md:hidden hidden border-t border-stone-200 dark:border-stone-800 transition-all duration-200 ease-in-out">
+            <div class="px-4 py-3 bg-stone-50 dark:bg-stone-900 space-y-1">
+                {["Dashboard", "Facturas", "Clientes", "Estadísticas", "Configuración"].map((item) => (
+                        <a
+                                href={`/${item === "Dashboard" ? "" : item.toLowerCase()}`}
+                                class="block px-3 py-2 rounded-md text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all duration-200"
+                        >
+                            {item}
+                        </a>
+                ))}
+            </div>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <slot/>
+    </main>
+
+    <!-- Footer - Vercel Style -->
+    <footer class="bg-stone-50 dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex justify-between items-center text-sm text-stone-500 dark:text-stone-400">
+                <p>© 2025 Sistema de Facturación Electrónica SRI</p>
+                <p class="flex items-center gap-2">
+                    <span>v1.0</span>
+                    <span class="w-1 h-1 bg-stone-400 rounded-full"></span>
+                    <span class="text-blue-600 dark:text-blue-400">Astro 5.x</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile toggle script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const button = document.getElementById('mobile-menu-button');
+            const menu = document.getElementById('mobile-menu');
+
+            if (button && menu) {
+                button.addEventListener('click', () => {
+                    menu.classList.toggle('hidden');
+                });
+            }
+        });
+    </script>
+
+    <!-- Toast notifications -->
+    <Toast/>
+</div>
+</body>
+</html>
