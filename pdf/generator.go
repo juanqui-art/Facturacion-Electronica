@@ -55,7 +55,7 @@ func (g *FacturaPDFGenerator) GenerarFacturaPDF(facturaID int) ([]byte, error) {
 	pdf.CellFormat(95, 6, fmt.Sprintf("Fecha: %s", factura.FechaEmision.Format("02/01/2006")), "1", 1, "R", false, 0, "")
 
 	pdf.CellFormat(95, 6, "Av. Principal 123, Quito", "0", 0, "L", false, 0, "")
-	pdf.CellFormat(95, 6, fmt.Sprintf("Clave de Acceso:", ""), "1", 1, "R", false, 0, "")
+	pdf.CellFormat(95, 6, "Clave de Acceso:", "1", 1, "R", false, 0, "")
 
 	pdf.SetFont("Arial", "", 8)
 	pdf.CellFormat(95, 6, "Tel: (02) 123-4567", "0", 0, "L", false, 0, "")

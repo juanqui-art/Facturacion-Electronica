@@ -663,6 +663,69 @@ func (d *Database) ObtenerClientePorCedula(cedula string) (*ClienteDB, error) {
 	return cliente, nil
 }
 
+// ListarClientes obtiene todos los clientes con filtros opcionales
+func (d *Database) ListarClientes(nombre, tipoCliente string, limite, offset int) ([]*ClienteDB, error) {
+	var args []interface{}
+	query := `
+		SELECT id, cedula, nombre, direccion, telefono, email, tipo_cliente, fecha_creacion, activo
+		FROM clientes WHERE activo = 1`
+
+	// Agregar filtros si se proporcionan
+	if nombre != "" {
+		query += ` AND LOWER(nombre) LIKE LOWER(?)`
+		args = append(args, "%"+nombre+"%")
+	}
+
+	if tipoCliente != "" {
+		query += ` AND tipo_cliente = ?`
+		args = append(args, tipoCliente)
+	}
+
+	// Ordenar por fecha de creación (más recientes primero)
+	query += ` ORDER BY fecha_creacion DESC`
+
+	// Agregar limit y offset
+	query += ` LIMIT ? OFFSET ?`
+	args = append(args, limite, offset)
+
+	rows, err := d.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("error ejecutando consulta de clientes: %v", err)
+	}
+	defer rows.Close()
+
+	var clientes []*ClienteDB
+
+	for rows.Next() {
+		cliente := &ClienteDB{}
+		var direccion, telefono, email sql.NullString
+
+		err := rows.Scan(&cliente.ID, &cliente.Cedula, &cliente.Nombre, &direccion,
+			&telefono, &email, &cliente.TipoCliente, &cliente.FechaCreacion, &cliente.Activo)
+		if err != nil {
+			return nil, fmt.Errorf("error escaneando cliente: %v", err)
+		}
+
+		if direccion.Valid {
+			cliente.Direccion = direccion.String
+		}
+		if telefono.Valid {
+			cliente.Telefono = telefono.String
+		}
+		if email.Valid {
+			cliente.Email = email.String
+		}
+
+		clientes = append(clientes, cliente)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterando clientes: %v", err)
+	}
+
+	return clientes, nil
+}
+
 // EstadisticasFacturas obtiene estadísticas básicas de facturas
 func (d *Database) EstadisticasFacturas() (map[string]interface{}, error) {
 	stats := make(map[string]interface{})

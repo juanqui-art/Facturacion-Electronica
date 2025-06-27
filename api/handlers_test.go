@@ -366,10 +366,36 @@ func TestHandleFacturaByID(t *testing.T) {
 		CreatedAt: time.Now(),
 		Factura: models.Factura{
 			InfoTributaria: models.InfoTributaria{
-				Secuencial: "000000001",
+				Ambiente:        "1",
+				TipoEmision:     "1",
+				RazonSocial:     "INNOVATECH SOLUTIONS CIA. LTDA.",
+				RUC:             "1791000005001",
+				ClaveAcceso:     "27062025011791000005001100100100000000175853228818",
+				CodDoc:          "01",
+				Establecimiento: "001",
+				PuntoEmision:    "001",
+				Secuencial:      "000000001",
 			},
 			InfoFactura: models.InfoFactura{
-				RazonSocialComprador: "Test Cliente",
+				FechaEmision:                "27/06/2025",
+				DirEstablecimiento:          "Av. República del Salvador N36-84",
+				TipoIdentificacionComprador: "05",
+				IdentificacionComprador:     "1713175071",
+				RazonSocialComprador:        "Test Cliente",
+				TotalSinImpuestos:           100.0,
+				TotalDescuento:              0.0,
+				ImporteTotal:                115.0,
+				Moneda:                      "DOLAR",
+			},
+			Detalles: []models.Detalle{
+				{
+					CodigoPrincipal:        "PROD001",
+					Descripcion:            "Producto de prueba",
+					Cantidad:               1.0,
+					PrecioUnitario:         100.0,
+					Descuento:              0.0,
+					PrecioTotalSinImpuesto: 100.0,
+				},
 			},
 		},
 	}

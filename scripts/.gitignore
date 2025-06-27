@@ -1,0 +1,2 @@
+# Scripts con main() - no son tests de Go
+*.go
